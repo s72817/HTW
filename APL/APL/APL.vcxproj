@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{83BAE28A-4293-4EA4-925C-7EE58678F80F}</ProjectGuid>
+    <ProjectGuid>{7087AF18-BF06-4326-9633-AE7F5A566536}</ProjectGuid>
     <RootNamespace>APL</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -64,10 +64,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="APL_Liste.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="funktionen.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
