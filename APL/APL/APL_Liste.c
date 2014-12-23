@@ -196,7 +196,7 @@ int main() {
 			scanf_s("%lld", &tmp_KN);
 			while (getchar() != '\n');
 
-			if (tmp_KN >= 1000000000 && tmp_KN <= 9999999999) {
+			if (digits(tmp_KN) == 10) {
 				int KN[KN_len];
 				num_to_arr(KN, KN_len, tmp_KN);
 				if (!check_acc_no(KN)) printf("Falsch\n");
@@ -209,7 +209,7 @@ int main() {
 					printf("Nummer nicht gefunden!\n");
 				break;
 			}
-			else printf("Falsche Eingabe!\n");
+			else printf("Bitte geben Sie ihre 10-stellige Kontonummer an!\n");
 			
 		}
 			break;
@@ -232,9 +232,12 @@ int main() {
 		}
 	}
 
+	/*long long x = 132323;
+	printf("%d", digits(x));*/
 
 
-	//getch();
+
+	getch();
 	return 0;
 }
 
