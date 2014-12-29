@@ -15,12 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="APL_Liste.c">
+    <ClCompile Include="main.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="funktionen.h">
+    <ClInclude Include="funktionen.c">
       <Filter>Quelldateien</Filter>
     </ClInclude>
   </ItemGroup>

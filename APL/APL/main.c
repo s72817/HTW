@@ -3,7 +3,7 @@
 #include <time.h>
 #include <math.h>
 //Eigene Header
-#include "funktionen.h"
+#include "funktionen.c"
 
 #define MaxHash 10
 #define KN_len 10 //Anz der Ziffernn der Kontonummer
