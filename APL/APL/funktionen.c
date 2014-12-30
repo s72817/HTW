@@ -1,5 +1,7 @@
 //Funktionen.h by Richard Kerber
 
+#define KN_len 10 //Anz der Ziffernn der Kontonummer
+
 void num_to_arr(int arr[], int len, long long int num);
 long long int arr_to_num(int *arr, int len);
 int digits(long long int x);
@@ -55,19 +57,30 @@ int digits(long long int x) {
 /// 10.Ziffer = Prüfziffer (vgl. ISBN)
 /// </summary>
 /// <param name="Arr">The arr.</param>
-void get_acc_no(int *Arr) {
+void get_acc_no(int *Arr, int counter) {
 	//1. und 2. Stellle = Bankcode
 	Arr[0] = 2; Arr[1] = 4;
-	do {
-		//3.-9. Ziffer = Kundencode
-		for (int i = 2; i < 9; i++)
-			Arr[i] = rand() % 10;
-		//Algorithmus für 10.Ziffer = Prüfziffer (vgl. ISBN)
-		long sum = 0;
-		for (int i = 0; i < 9; i++)
-			sum += ((i + 1)*Arr[i]);
-		Arr[9] = sum % 11;
-	} while (Arr[9] >= 10); //als Prüfziffer darf keine Zahl größer 9 herauskommen
+	for (int i = 2; i < KN_len; i++)
+		Arr[i] = 0;
+
+	long long int sum = arr_to_num(Arr, KN_len);
+	sum += counter;
+
+	//long long int counter = arr_to_num(Arr, KN_len);
+	num_to_arr(Arr, KN_len, sum);
+
+	////1. und 2. Stellle = Bankcode
+	//Arr[0] = 2; Arr[1] = 4;
+	//do {
+	//	//3.-9. Ziffer = Kundencode
+	//	for (int i = 2; i < 9; i++)
+	//		Arr[i] = rand() % 10;
+	//	//Algorithmus für 10.Ziffer = Prüfziffer (vgl. ISBN)
+	//	long sum = 0;
+	//	for (int i = 0; i < 9; i++)
+	//		sum += ((i + 1)*Arr[i]);
+	//	Arr[9] = sum % 11;
+	//} while (Arr[9] >= 10); //als Prüfziffer darf keine Zahl größer 9 herauskommen
 }
 
 /// <summary>

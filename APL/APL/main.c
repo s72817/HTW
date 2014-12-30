@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-//Eigene Header
+
+//Eigene Dateien
 #include "funktionen.c"
 
 #define MaxHash 10
@@ -44,7 +45,7 @@ int hash_function(long long int Kontonummer) {
 /// <returns>Kunde-Struktur</returns>
 kunde *kunde_add(kunde *konto, int counter) {
 	int KN_Arr[10];
-	get_acc_no(KN_Arr);
+	get_acc_no(KN_Arr, counter);
 
 	//Hash Wert generienen
 	int hashaddress = hash_function(arr_to_num(KN_Arr, KN_len)); //verbesserungswürdig
@@ -136,7 +137,7 @@ void kunde_delete(kunde *konto, long long int Kontonummer) {
 		}/* Ende else */
 	}/* Ende if(anfang != NULL) */
 	else
-		printf("Es sind keine Daten zum Löschen vorhanden!!!\n");
+		printf("Es sind keine Daten zum Loeschen vorhanden!\n");
 }
 
 
@@ -227,17 +228,14 @@ int main() {
 			long long int tmp_KN;
 			printf("Kontonummer:");
 			scanf_s("%lld", &tmp_KN);
-			kunde_delete(k, tmp_KN);
+			if (kunde_suche(k, tmp_KN) != NULL)
+				kunde_delete(k, tmp_KN);
+			else printf("Kontonummer nicht gefunden!\n");
 		}
 		}
 	}
 
-	/*long long x = 132323;
-	printf("%d", digits(x));*/
-
-
-
-	getch();
+	//getch();
 	return 0;
 }
 
