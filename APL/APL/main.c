@@ -138,8 +138,10 @@ void kunde_delete(long long int Kontonummer) {
 }
 
 kunde *kunde_edit(kunde *me, long long int Kontonummer, double Betrag) { //kunde *kunde_edit
+	kunde tmp_kunde = *me;
 	//kunde löschen
 	kunde_delete(Kontonummer);  //wichtig: Aufruf nach Deklaration! TODO: Deklarationen im Kopf tätigen
+
 	//kunde mit veränderten Werten neu hinzufügen
 	int hashaddress = hash_function(Kontonummer);
 	kunde *konto = hashtabelle[hashaddress];
@@ -149,17 +151,19 @@ kunde *kunde_edit(kunde *me, long long int Kontonummer, double Betrag) { //kunde
 		return NULL;
 	}
 	//Struct befüllen
-	konto->ID = me->ID;
+	konto->ID = tmp_kunde.ID;
 	for (int i = 0; i < KN_len; i++)
-		konto->Kontonummer[i] = me->Kontonummer[i];
+		konto->Kontonummer[i] = tmp_kunde.Kontonummer[i];
 	konto->Guthaben = 0.0; //Warum erst initialisieren ??
 	konto->Guthaben += Betrag; //hier wird erst drauf gerechnet
-	konto->PIN = me->PIN;
+	konto->PIN = tmp_kunde.PIN;
 	konto->isblocked = 0;
 	//Zeiger vom nächsten Element bekommt errechnete Hashadresse
 	konto->next = hashtabelle[hashaddress];
 	//Wert zum Hash(Array) hinzufüen
 	hashtabelle[hashaddress] = konto;
+
+	//kunde_delete(Kontonummer);  //wichtig: Aufruf nach Deklaration! TODO: Deklarationen im Kopf tätigen
 
 	return konto;
 }
@@ -177,17 +181,17 @@ int kunde_pruefen(kunde *me, long long int Kontonummer, int PIN) {
 }
 
 
-void kunde_output_all(kunde **hashtabelle) {
+void kunde_output_all() { //kunde **hashtabelle
 	for (int i = 0; i < MaxHash; i++){
 		kunde *konto = hashtabelle[i];
 		while (konto != NULL) {
-			printf("Kontonummer: %d\nHash: %d\n", konto->Kontonummer, hash_function(arr_to_num(konto->Kontonummer, KN_len)));
+			printf("Kontonummer: %lld Hash: %d\n",arr_to_num(konto->Kontonummer, KN_len), hash_function(arr_to_num(konto->Kontonummer, KN_len)));
 			konto = konto->next;
 		}
 	}
 }
 
-//gibt die Entsprechenden Listenelemente mit demselben Hashwert aus!!
+//gibt die Entsprechenden Listenelemente mit demselben Hashwert aus
 void kunde_output_byhash(long long int KN) {
 	int hashaddress = hash_function(KN);
 	kunde *konto = hashtabelle[hashaddress];
@@ -228,6 +232,7 @@ int main() {
 	menu_add(&mymenu, "Beenden", 2);
 	menu_add(&mymenu, "Kunde suchen", 3);
 	menu_add(&mymenu, "Kontonummer mit gleichem Hashwert", 3);
+	menu_add(&mymenu, "Alle Kunden mit Hash ausgeben", 3);
 	menu_add(&mymenu, "zurueck", 3);
 
 	//kunde *k = NULL; //komplette Liste
@@ -246,7 +251,7 @@ int main() {
 		printf("\nIhre Wahl:\n");
 		scanf_s("%d", &auswahl);
 		switch (auswahl) {
-		case 1: {
+		case 1: { //kunde anlegen
 			kunde *tmp_kunde;
 			for (int i = 0; i < 10; i++)
 				tmp_kunde = kunde_add(counter++);
@@ -254,7 +259,7 @@ int main() {
 
 			break;
 		}
-		case 2: {
+		case 2: { //kunde anmelden
 			int zaehler = 0; //Zähler für PIN-Versuche initialisieren
 			long long int tmp_KN; int tmp_PIN = 0; //Temporäre Variablen für Kontonummer und PIN anlegen
 			
@@ -307,32 +312,43 @@ int main() {
 			else printf("Kontonummer nicht gefunden!");
 			break;
 		}
-		case 4:
-			kunde_delete(2400000000);
-			break;
+		case 3: return 0;//Beenden
 		
-		case 6: { //kunde_output byhash
-			long long int tmp_KN;
-			printf("Kontonummer:");
-			scanf_s("%lld", &tmp_KN);
-			while (getchar() != '\n');
-			if (kunde_suche(tmp_KN) != NULL)
-				kunde_output_byhash(tmp_KN);
-			else printf("Kontonummer nicht gefunden!\n");
-			break;
-		}
-		case 555: //Spezial Menu
+		case 55: //Spezial Menu
 			do { 
 				menu_show(mymenu, 3); //Menu erzeugen
 				printf("\nIhre Wahl:\n");
 				scanf_s("%d", &auswahl);
 				switch (auswahl) {
-				
-				case 2: break;
-				case 3: break;
+				case 1: { //kunde suchen
+					long long int tmp_KN;
+					printf("Kontonummer:");
+					scanf_s("%lld", &tmp_KN);
+					while (getchar() != '\n');
+					if (kunde_suche(tmp_KN) != NULL) {
+						printf("Kunde gefunden!\n");
+						kunde_show(kunde_suche(tmp_KN));
+					}
+					else printf("Kontonummer nicht gefunden!\n");
+					break;	
+				}
+				case 2: { //kunde_output byhash
+					long long int tmp_KN;
+					printf("Kontonummer:");
+					scanf_s("%lld", &tmp_KN);
+					while (getchar() != '\n');
+					if (kunde_suche(tmp_KN) != NULL)
+						kunde_output_byhash(tmp_KN);
+					else printf("Kontonummer nicht gefunden!\n");
+					break;
+				}
+				case 3: //kunde output all
+					kunde_output_all();
+					break;
+				case 4: break; //zurück
 				
 				} 
-			} while (auswahl != 3);
+			} while (auswahl != 4); //wenn x, dann schluss!
 			break;
 		default:
 			printf("Ihrer Eingabe konnte kein Menuepunkt zugeordnet werden!\nBitte versuchen Sie es erneut.\n");
@@ -362,22 +378,47 @@ int main() {
 				//kunde_einzahlen(&me, tmp_Einzahlung); //Einzahlung(k, SID, tmp_Einzahlung);
 				//saveDB(k); //Daten speichern
 				break;
+			case 2: //Auszahlung
+				break;
+			case 3: //Überweisung
+				break;
 			case 4:	 //Kontostand
 				printf("\n\n----------------------------\n");
 				printf("Ihr Guthaben betraegt: %.2lf Euro\n", me->Guthaben);
 				printf("----------------------------\n");
 				break;
-			case 5: {
+			case 5: { //4 - stellige PIN aendern
 				double tmp_Betrag;
 				printf("Betrag: ");
 				scanf_s("%lf", &tmp_Betrag);
+				//kunde t;
 				me = kunde_edit(me, 2400000000, tmp_Betrag);
 				kunde_show(me);
 				break;
 			}
-				
-			case 9: 
+			case 6: //Kundendaten anzeigen
+				kunde_show(me);
+				break;
+			case 7: //Konto löschen
+				printf("Wollen Sie ihre Bank-Beziehung wirklich beenden?\n");
+				printf("(J)a oder (N)ein\n");
+				char res = (char)getche();
+				printf("\n");
+				//scanf_s("%c", res);
+				if (res == 'j' || res == 'J') {
+					printf("Ihr Verhaeltnis ist nun beendet!\n");
+					if (me->Guthaben != 0.0) printf("Es werden Ihnen nun noch %.2lf Euro augezahlt.\n", me->Guthaben);
+					kunde_delete(arr_to_num(me->Kontonummer, KN_len));
+					islogged = 0;
+					//break;
+				}
+				break;
+			case 8: //abmelden
 				islogged = 0;
+				break;
+			case 9: return 0;//Beenden
+			default: 
+				printf("Ihrer Eingabe konnte kein Menuepunkt zugeordnet werden!\nBitte versuchen Sie es erneut.\n");
 				break;
 			}
 		}
