@@ -31,7 +31,7 @@ typedef struct kunde_t{
 /// <summary>
 /// Die Hashtabelle (Hash-Array) mit den max. Einträgen
 /// </summary>
-kunde *hashtabelle[MaxHash];
+kunde *hashtable[MaxHash];
 
 /// <summary>
 /// Die Hashfunktion. 
@@ -56,7 +56,7 @@ kunde *kunde_add(int counter) {
 	//Hash Wert generienen
 	int hashaddress = hash_function(arr_to_num(KN_Arr, KN_len)); //verbesserungswürdig
 	/* Zeiger auf errechnete Tabellenadresse durch hash_funktion */
-	kunde *konto = hashtabelle[hashaddress];
+	kunde *konto = hashtable[hashaddress];
 
 	/* Speicher für neues Element allozieren */
 	konto = malloc(sizeof(kunde));
@@ -73,9 +73,9 @@ kunde *kunde_add(int counter) {
 	konto->PIN = GetRandPIN(counter);
 	konto->isblocked = 0;
 	//Zeiger vom nächsten Element bekommt errechnete Hashadresse
-	konto->next = hashtabelle[hashaddress];
+	konto->next = hashtable[hashaddress];
 	//Wert zum Hash(Array) hinzufüen
-	hashtabelle[hashaddress] = konto;
+	hashtable[hashaddress] = konto;
 
 	return konto;
 }
@@ -88,7 +88,7 @@ kunde *kunde_add(int counter) {
 /// <returns>struct kunde</returns>
 kunde *kunde_suche(long long int Kontonummer) {
 	int hashaddress = hash_function(Kontonummer);
-	kunde *konto = hashtabelle[hashaddress];
+	kunde *konto = hashtable[hashaddress];
 	kunde *me = NULL;
 	while (konto != NULL) {
 		if (arr_to_num(konto->Kontonummer, KN_len) == Kontonummer) {
@@ -110,14 +110,14 @@ kunde *kunde_suche(long long int Kontonummer) {
 void kunde_delete(long long int Kontonummer) {
 	kunde *zeiger, *zeiger1; //Hilfsstrukturen
 	int hashaddress = hash_function(Kontonummer); //Hashadresse berechnen
-	kunde *konto = hashtabelle[hashaddress]; //Liste mit entsprechenden Elementen füllen
+	kunde *konto = hashtable[hashaddress]; //Liste mit entsprechenden Elementen füllen
 
 	//Wenn erstes Element
 	if (konto != NULL) {
 		if (arr_to_num(konto->Kontonummer, KN_len) == Kontonummer) { //1.Element
 			zeiger = konto->next; //Hilfsstruktur wird mit dem nächsten Zeiger befüllt
 			free(konto); //Element löschen
-			hashtabelle[hashaddress] = zeiger; //
+			hashtable[hashaddress] = zeiger; //
 		}
 		else {
 			zeiger = konto;
@@ -126,7 +126,7 @@ void kunde_delete(long long int Kontonummer) {
 				if (arr_to_num(zeiger1->Kontonummer, KN_len) == Kontonummer) {
 					zeiger->next = zeiger1->next;
 					free(zeiger1);
-					hashtabelle[hashaddress] = konto;
+					hashtable[hashaddress] = konto;
 					break;
 				}
 				zeiger = zeiger1;
@@ -144,7 +144,7 @@ kunde *kunde_edit(kunde *me, long long int Kontonummer, double Betrag) { //kunde
 
 	//kunde mit veränderten Werten neu hinzufügen
 	int hashaddress = hash_function(Kontonummer);
-	kunde *konto = hashtabelle[hashaddress];
+	kunde *konto = hashtable[hashaddress];
 	konto = malloc(sizeof(kunde));
 	if (konto == NULL) {
 		printf("Kein Speicher für neues Element vorhanden\n");
@@ -159,9 +159,9 @@ kunde *kunde_edit(kunde *me, long long int Kontonummer, double Betrag) { //kunde
 	konto->PIN = tmp_kunde.PIN;
 	konto->isblocked = 0;
 	//Zeiger vom nächsten Element bekommt errechnete Hashadresse
-	konto->next = hashtabelle[hashaddress];
+	konto->next = hashtable[hashaddress];
 	//Wert zum Hash(Array) hinzufüen
-	hashtabelle[hashaddress] = konto;
+	hashtable[hashaddress] = konto;
 
 	//kunde_delete(Kontonummer);  //wichtig: Aufruf nach Deklaration! TODO: Deklarationen im Kopf tätigen
 
@@ -183,7 +183,7 @@ int kunde_pruefen(kunde *me, long long int Kontonummer, int PIN) {
 
 void kunde_output_all() { //kunde **hashtabelle
 	for (int i = 0; i < MaxHash; i++){
-		kunde *konto = hashtabelle[i];
+		kunde *konto = hashtable[i];
 		while (konto != NULL) {
 			printf("Kontonummer: %lld Hash: %d\n",arr_to_num(konto->Kontonummer, KN_len), hash_function(arr_to_num(konto->Kontonummer, KN_len)));
 			konto = konto->next;
@@ -194,7 +194,7 @@ void kunde_output_all() { //kunde **hashtabelle
 //gibt die Entsprechenden Listenelemente mit demselben Hashwert aus
 void kunde_output_byhash(long long int KN) {
 	int hashaddress = hash_function(KN);
-	kunde *konto = hashtabelle[hashaddress];
+	kunde *konto = hashtable[hashaddress];
 
 	//pointer = hashtabelle[hashaddress];
 	while (konto != NULL) {
@@ -237,6 +237,8 @@ int main() {
 
 	//kunde *k = NULL; //komplette Liste
 	kunde *me = NULL; //Aktuelles Object
+
+	//kunde *hashtabelle[MaxHash];
 
 	//kunde *hashtable[MaxHash]; //Hash-Tabelle
 
