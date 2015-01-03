@@ -6,6 +6,8 @@
 //Eigene Dateien
 #include "menu.h"
 #include "funktionen.c"
+#include "extern.c"
+
 //#include "menu.c"
 
 #define MaxHash 10
@@ -23,6 +25,8 @@ typedef struct kunde_t{
 
 	struct kunde_t *next;
 }kunde;
+
+
 
 /// <summary>
 /// Die Hashtabelle (Hash-Array) mit den max. Einträgen
@@ -44,15 +48,15 @@ int hash_function(long long int Kontonummer) {
 /// </summary>
 /// <param name="konto">Zeiger auf Konto-Liste</param>
 /// <param name="counter">Zähler als int</param>
-/// <returns>Kunde-Struktur</returns>
-kunde *kunde_add(kunde *konto, int counter) {
+/// <returns>angelegten Kunde</returns>
+kunde *kunde_add(int counter) {
 	int KN_Arr[10];
 	get_acc_no(KN_Arr, counter);
 
 	//Hash Wert generienen
 	int hashaddress = hash_function(arr_to_num(KN_Arr, KN_len)); //verbesserungswürdig
 	/* Zeiger auf errechnete Tabellenadresse durch hash_funktion */
-	konto = hashtabelle[hashaddress];
+	kunde *konto = hashtabelle[hashaddress];
 
 	/* Speicher für neues Element allozieren */
 	konto = malloc(sizeof(kunde));
@@ -66,21 +70,12 @@ kunde *kunde_add(kunde *konto, int counter) {
 	for (int i = 0; i < KN_len; i++)
 		konto->Kontonummer[i] = KN_Arr[i];
 	konto->Guthaben = 0.0;
-	konto->PIN = counter * 5 + 1; //TODO: PIN Generator
+	konto->PIN = GetRandPIN(counter);
 	konto->isblocked = 0;
 	//Zeiger vom nächsten Element bekommt errechnete Hashadresse
 	konto->next = hashtabelle[hashaddress];
 	//Wert zum Hash(Array) hinzufüen
 	hashtabelle[hashaddress] = konto;
-	
-
-	printf("\n----------------------------\n");
-	printf("Sie haben erfolgreich einen neuen Kunden angelegt!\n");
-	printf("KundenID......: %d\n", konto->ID);
-	printf("Kontonummer...: %lld", arr_to_num(konto->Kontonummer, KN_len));
-	printf("\nGuthaben......: %.2lf Euro\n", konto->Guthaben);
-	printf("Pin...........: %d\n", konto->PIN);
-	printf("----------------------------\n"); 
 
 	return konto;
 }
@@ -91,9 +86,9 @@ kunde *kunde_add(kunde *konto, int counter) {
 /// <param name="konto">kundenliste</param>
 /// <param name="Kontonummer">Kontonummer als long long</param>
 /// <returns>struct kunde</returns>
-kunde *kunde_suche(kunde *konto, long long int Kontonummer) {
+kunde *kunde_suche(long long int Kontonummer) {
 	int hashaddress = hash_function(Kontonummer);
-	konto = hashtabelle[hashaddress];
+	kunde *konto = hashtabelle[hashaddress];
 	kunde *me = NULL;
 	while (konto != NULL) {
 		if (arr_to_num(konto->Kontonummer, KN_len) == Kontonummer) {
@@ -112,10 +107,10 @@ kunde *kunde_suche(kunde *konto, long long int Kontonummer) {
 /// <param name="konto">Zeiger auf Konto</param>
 /// <param name="hashtabelle">Hashtabelle</param>
 /// <param name="KN">Kontonummer</param>
-void kunde_delete(kunde *konto, long long int Kontonummer) {
+void kunde_delete(long long int Kontonummer) {
 	kunde *zeiger, *zeiger1; //Hilfsstrukturen
 	int hashaddress = hash_function(Kontonummer); //Hashadresse berechnen
-	konto = hashtabelle[hashaddress]; //Liste mit entsprechenden Elementen füllen
+	kunde *konto = hashtabelle[hashaddress]; //Liste mit entsprechenden Elementen füllen
 
 	//Wenn erstes Element
 	if (konto != NULL) {
@@ -142,10 +137,49 @@ void kunde_delete(kunde *konto, long long int Kontonummer) {
 		printf("Es sind keine Daten zum Loeschen vorhanden!\n");
 }
 
+kunde *kunde_edit(kunde *me, long long int Kontonummer, double Betrag) { //kunde *kunde_edit
+	//kunde löschen
+	kunde_delete(Kontonummer);  //wichtig: Aufruf nach Deklaration! TODO: Deklarationen im Kopf tätigen
+	//kunde mit veränderten Werten neu hinzufügen
+	int hashaddress = hash_function(Kontonummer);
+	kunde *konto = hashtabelle[hashaddress];
+	konto = malloc(sizeof(kunde));
+	if (konto == NULL) {
+		printf("Kein Speicher für neues Element vorhanden\n");
+		return NULL;
+	}
+	//Struct befüllen
+	konto->ID = me->ID;
+	for (int i = 0; i < KN_len; i++)
+		konto->Kontonummer[i] = me->Kontonummer[i];
+	konto->Guthaben = 0.0; //Warum erst initialisieren ??
+	konto->Guthaben += Betrag; //hier wird erst drauf gerechnet
+	konto->PIN = me->PIN;
+	konto->isblocked = 0;
+	//Zeiger vom nächsten Element bekommt errechnete Hashadresse
+	konto->next = hashtabelle[hashaddress];
+	//Wert zum Hash(Array) hinzufüen
+	hashtabelle[hashaddress] = konto;
 
-void kunde_output_all(kunde *konto, kunde **hashtabelle) {
+	return konto;
+}
+
+
+/// <summary>
+/// Prüfen der Kontonummer & PIN
+/// </summary>
+/// <param name="me">Me.</param>
+/// <param name="Kontonummer">The kontonummer.</param>
+/// <param name="PIN">The pin.</param>
+/// <returns>0 oder 1</returns>
+int kunde_pruefen(kunde *me, long long int Kontonummer, int PIN) {
+	return ((arr_to_num(me->Kontonummer, KN_len) == Kontonummer) && (me->PIN == PIN));
+}
+
+
+void kunde_output_all(kunde **hashtabelle) {
 	for (int i = 0; i < MaxHash; i++){
-		konto = hashtabelle[i];
+		kunde *konto = hashtabelle[i];
 		while (konto != NULL) {
 			printf("Kontonummer: %d\nHash: %d\n", konto->Kontonummer, hash_function(arr_to_num(konto->Kontonummer, KN_len)));
 			konto = konto->next;
@@ -154,15 +188,26 @@ void kunde_output_all(kunde *konto, kunde **hashtabelle) {
 }
 
 //gibt die Entsprechenden Listenelemente mit demselben Hashwert aus!!
-void kunde_output_byhash(kunde *konto, long long int KN) {
+void kunde_output_byhash(long long int KN) {
 	int hashaddress = hash_function(KN);
-	konto = hashtabelle[hashaddress];
+	kunde *konto = hashtabelle[hashaddress];
 
 	//pointer = hashtabelle[hashaddress];
 	while (konto != NULL) {
 		printf("Kontonummer: %lld Hash: %d\n",arr_to_num(konto->Kontonummer, KN_len), hash_function(arr_to_num(konto->Kontonummer, KN_len)));
 		konto = konto->next;
 	}
+}
+
+void kunde_show(kunde *me) {
+	//Ausgabe
+	printf("\n----------------------------\n");
+	//printf("Sie haben erfolgreich einen neuen Kunden angelegt!\n");
+	printf("KundenID......: %d\n", me->ID);
+	printf("Kontonummer...: %lld", arr_to_num(me->Kontonummer, KN_len));
+	printf("\nGuthaben......: %.2lf Euro\n", me->Guthaben);
+	printf("Pin...........: %d\n", me->PIN);
+	printf("----------------------------\n\n");
 }
 
 
@@ -185,8 +230,8 @@ int main() {
 	menu_add(&mymenu, "Kontonummer mit gleichem Hashwert", 3);
 	menu_add(&mymenu, "zurueck", 3);
 
-	kunde *k = NULL; //komplette Liste
-	kunde me; //Aktuelles Object
+	//kunde *k = NULL; //komplette Liste
+	kunde *me = NULL; //Aktuelles Object
 
 	//kunde *hashtable[MaxHash]; //Hash-Tabelle
 
@@ -201,45 +246,144 @@ int main() {
 		printf("\nIhre Wahl:\n");
 		scanf_s("%d", &auswahl);
 		switch (auswahl) {
-		case 1: kunde_add(&k, counter++);
+		case 1: {
+			kunde *tmp_kunde;
+			for (int i = 0; i < 10; i++)
+				tmp_kunde = kunde_add(counter++);
+			kunde_show(tmp_kunde);
+
+			break;
+		}
 		case 2: {
+			int zaehler = 0; //Zähler für PIN-Versuche initialisieren
+			long long int tmp_KN; int tmp_PIN = 0; //Temporäre Variablen für Kontonummer und PIN anlegen
+			
+			while (1) {
+				printf("Kontonummer: ");
+				scanf_s("%lld", &tmp_KN); //tmp_Kontonummer mit Benutzereingabe füllen
+				while (getchar() != '\n');
+				if (tmp_KN >= 1000000000 && tmp_KN <= 9999999999) break; //Wenn Kontonummer zwischen 1000 und 9999 liegt, dann weiter
+				else printf("Bitte geben Sie Ihre 10-stellige Kontonummer an!\n");
+			}
+			
+			if (kunde_suche(tmp_KN) != NULL) {
+				me = kunde_suche(tmp_KN);
+				//Abfrage, ob blockiert
+				if (me->isblocked == 1) {
+					printf("\n\n----------------------------\n");
+					printf("Die Kontonummer %lld ist blockiert.\nBitte wenden Sie sich an den naechsten\nfreien Service-Mitarbeiter.\n", arr_to_num(me->Kontonummer, KN_len));
+					printf("----------------------------\n");
+					break;
+				}
+
+				while (1) { //zaehler <= 2
+					//abfrage nach PIN
+					while (1) {
+						printf("PIN: ");
+						scanf_s("%d", &tmp_PIN);
+						while (getchar() != '\n');
+						if (tmp_PIN >= 1000 && tmp_PIN <= 9999) break;
+						else printf("Bitte geben Sie Ihre 4-stellige PIN an!\n");
+					}
+					if (kunde_pruefen(me, tmp_KN, tmp_PIN) == 1) { //kunden[SIDKunde].PIN) == 1)
+						printf("Sie haben sich erfolgreich angemeldet!\n");
+						islogged = 1;
+						break;
+					}
+					else {
+						zaehler += 1; //Pin Eingabemöglichkeit wird um eins hoch gesetzt
+						//Prüfen, ob 3x hintereinander die falsche PIN eingegeben wurde!
+						if (zaehler == 3) {
+							printf("Sie haben 3x hintereinander\ndie falsche PIN eingegeben!\nSie sind nun blockiert!");
+							me->isblocked = 1; //Kunde wird hiermit blockiert
+							//saveDB(k); //Daten speichern
+							break;
+						}
+					}
+					// <3, weil bis 2 gezählt wird
+					if (zaehler < 3) printf("Bitte wiederholen (%d. Versuch)\n", zaehler + 1);
+				}
+			}
+			else printf("Kontonummer nicht gefunden!");
+			break;
+		}
+		case 4:
+			kunde_delete(2400000000);
+			break;
+		
+		case 6: { //kunde_output byhash
 			long long int tmp_KN;
 			printf("Kontonummer:");
 			scanf_s("%lld", &tmp_KN);
 			while (getchar() != '\n');
-
-			if (digits(tmp_KN) == 10) {
-				int KN[KN_len];
-				num_to_arr(KN, KN_len, tmp_KN);
-				if (!check_acc_no(KN)) printf("Falsch\n"); //Prüfziffer checken
-
-				if (kunde_suche(k, tmp_KN) != NULL) {
-					me = *kunde_suche(k, tmp_KN);
-					if (me.isblocked = 1) {
-						printf("\n\n----------------------------\n");
-						printf("Die Kontonummer %d ist blockiert.\nBitte wenden Sie sich an den naechsten\nfreien Service-Mitarbeiter.\n", me.Kontonummer);
-						printf("----------------------------\n");
-						break;
-					}
-					islogged = 1;
-					printf("Nummer %lld gefunden!\n", arr_to_num(me.Kontonummer, KN_len));
-				}
-				else
-					printf("Nummer nicht gefunden!\n");
-				break;
-			}
-			else printf("Bitte geben Sie ihre 10-stellige Kontonummer an!\n");
+			if (kunde_suche(tmp_KN) != NULL)
+				kunde_output_byhash(tmp_KN);
+			else printf("Kontonummer nicht gefunden!\n");
 			break;
 		}
+		case 555: //Spezial Menu
+			do { 
+				menu_show(mymenu, 3); //Menu erzeugen
+				printf("\nIhre Wahl:\n");
+				scanf_s("%d", &auswahl);
+				switch (auswahl) {
+				
+				case 2: break;
+				case 3: break;
+				
+				} 
+			} while (auswahl != 3);
+			break;
 		default:
 			printf("Ihrer Eingabe konnte kein Menuepunkt zugeordnet werden!\nBitte versuchen Sie es erneut.\n");
-			break;
-			
-			
+			break;	
 		} //Switch
+
+
+		while (1) { //2.Menu
+			if (islogged == 0) break; //Wichtig, da sonst nicht zurück
+			menu_show(mymenu, 2); //Menu erzeugen
+			printf("\nIhre Wahl:\n");
+			scanf_s("%d", &auswahl);
+			switch (auswahl) {
+			case 1: //Einzahlung
+				//Variable muss unbedingt vorher initialisiert werden durch login!
+				printf("Einzahlung");
+				double tmp_Einzahlung;
+				printf("Bitte geben Sie den Betrag ein, welcher eingezahlt werden soll:\n(Sie koennen max. 5000 Euro Einzahlen.)\n");
+				while (1) {
+					printf("Betrag: ");
+					scanf_s("%lf", &tmp_Einzahlung);
+					while (getchar() != '\n');
+					if (tmp_Einzahlung > 0.00 && tmp_Einzahlung <= 5000.0) break;
+					else printf("falsche Eingabe! Bitte wiederholen\n");
+				}
+
+				//kunde_einzahlen(&me, tmp_Einzahlung); //Einzahlung(k, SID, tmp_Einzahlung);
+				//saveDB(k); //Daten speichern
+				break;
+			case 4:	 //Kontostand
+				printf("\n\n----------------------------\n");
+				printf("Ihr Guthaben betraegt: %.2lf Euro\n", me->Guthaben);
+				printf("----------------------------\n");
+				break;
+			case 5: {
+				double tmp_Betrag;
+				printf("Betrag: ");
+				scanf_s("%lf", &tmp_Betrag);
+				me = kunde_edit(me, 2400000000, tmp_Betrag);
+				kunde_show(me);
+				break;
+			}
+				
+			case 9: 
+				islogged = 0;
+				break;
+			}
+		}
 	} //1.Menu
 
-	getch();
+	//getchar();
 	return 0;
 }
 

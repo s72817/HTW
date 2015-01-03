@@ -5,7 +5,7 @@
 void num_to_arr(int arr[], int len, long long int num);
 long long int arr_to_num(int *arr, int len);
 int digits(long long int x);
-void get_acc_no(int *Arr);
+void get_acc_no(int *Arr, int counter);
 int check_acc_no(int acc_no[]);
 
 /// <summary>
@@ -52,11 +52,12 @@ int digits(long long int x) {
 }
 
 /// <summary>
-/// Generiert eine 10-stellige Kontonummer. 
+/// Generiert eine 10-stellige Kontonummer.
 /// 1.u.2. Ziffer = Bankcode, 3.-9.Ziffer = Kundencode,
 /// 10.Ziffer = Prüfziffer (vgl. ISBN)
 /// </summary>
 /// <param name="Arr">The arr.</param>
+/// <param name="counter">The counter.</param>
 void get_acc_no(int *Arr, int counter) {
 	//1. und 2. Stellle = Bankcode
 	Arr[0] = 2; Arr[1] = 4;
@@ -94,4 +95,13 @@ int check_acc_no(int acc_no[]) {
 		sum += (i + 1)*acc_no[i];
 	if ((sum % 11) == acc_no[9]) return 1;
 	else return 0;
+}
+
+/// <summary>
+/// Generiert eine 4-stellige PIN zw. 1000 und 9999
+/// </summary>
+/// <returns>gibt eine beliebige 4 stellige Zahl aus</returns>
+int GetRandPIN(int KundeID) {
+	int min = 1000, max = 9999;
+	return (rand() % (max - min + 1)) + min;
 }
