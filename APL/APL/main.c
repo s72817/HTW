@@ -137,13 +137,16 @@ void kunde_delete(long long int Kontonummer) {
 		printf("Es sind keine Daten zum Loeschen vorhanden!\n");
 }
 
-kunde *kunde_edit(kunde *me, long long int Kontonummer, double Betrag) { //kunde *kunde_edit
-	kunde tmp_kunde = *me;
+typedef enum zahlung_t { Einzahlung, Auszahlung } zahlung;
+
+kunde *kunde_edit(kunde *me,double Betrag, zahlung zahlung) { //kunde *kunde_edit
+	kunde tmp_kunde = *me; //Darf nicht als Zeiger deklariert werden, da sonst durch löschen verloren geht!
 	//kunde löschen
-	kunde_delete(Kontonummer);  //wichtig: Aufruf nach Deklaration! TODO: Deklarationen im Kopf tätigen
+	long long int KN = arr_to_num(me->Kontonummer, KN_len);
+	kunde_delete(KN);  //wichtig: Aufruf nach Deklaration! TODO: Deklarationen im Kopf tätigen
 
 	//kunde mit veränderten Werten neu hinzufügen
-	int hashaddress = hash_function(Kontonummer);
+	int hashaddress = hash_function(KN);
 	kunde *konto = hashtable[hashaddress];
 	konto = malloc(sizeof(kunde));
 	if (konto == NULL) {
@@ -155,15 +158,32 @@ kunde *kunde_edit(kunde *me, long long int Kontonummer, double Betrag) { //kunde
 	for (int i = 0; i < KN_len; i++)
 		konto->Kontonummer[i] = tmp_kunde.Kontonummer[i];
 	konto->Guthaben = 0.0; //Warum erst initialisieren ??
-	konto->Guthaben += Betrag; //hier wird erst drauf gerechnet
+	if (zahlung == Einzahlung) {
+		konto->Guthaben += Betrag; //hier wird erst drauf gerechnet
+		printf("\n\n----------------------------\n");
+		printf("Sie haben erfolgreich %.2lf Euro eingezahlt.\n", Betrag);
+		printf("----------------------------\n\n");
+	}
+	if (zahlung == Auszahlung) {
+		konto->Guthaben = tmp_kunde.Guthaben;
+		if ((tmp_kunde.Guthaben - Betrag) < 0) {
+			printf("\n\n----------------------------\n");
+			printf("Der Betrag von %.2lf Euro kann nicht ausgezahlt werden,\nda sonst ihr Konto ueberzogen wird!\n", Betrag);
+			printf("----------------------------\n\n");
+			return NULL;
+		}
+		konto->Guthaben -= Betrag;
+		printf("\n\n----------------------------\n");
+		printf("Sie haben erfolgreich %.2lf Euro abgehoben.\n", Betrag);
+		printf("----------------------------\n\n");
+	}
+	
 	konto->PIN = tmp_kunde.PIN;
 	konto->isblocked = 0;
 	//Zeiger vom nächsten Element bekommt errechnete Hashadresse
 	konto->next = hashtable[hashaddress];
 	//Wert zum Hash(Array) hinzufüen
 	hashtable[hashaddress] = konto;
-
-	//kunde_delete(Kontonummer);  //wichtig: Aufruf nach Deklaration! TODO: Deklarationen im Kopf tätigen
 
 	return konto;
 }
@@ -377,11 +397,27 @@ int main() {
 					else printf("falsche Eingabe! Bitte wiederholen\n");
 				}
 
-				//kunde_einzahlen(&me, tmp_Einzahlung); //Einzahlung(k, SID, tmp_Einzahlung);
+				me = kunde_edit(me, tmp_Einzahlung, Einzahlung);
+				kunde_show(me);
 				//saveDB(k); //Daten speichern
 				break;
-			case 2: //Auszahlung
+			case 2: { //Auszahlung
+				double tmp_Auszahlung = 0.0;
+				printf("Bitte geben Sie den Betrag ein, welcher ausgezahlt werden soll:\n(Es koennen max. %.2lf Euro ausgezahlt werden)\n", me->Guthaben);
+				while (1) {
+					printf("Betrag:");
+					scanf_s("%lf", &tmp_Auszahlung);
+					while (getchar() != '\n');
+					if (tmp_Auszahlung > 0.0 && tmp_Auszahlung <= me->Guthaben) break;
+					else if (tmp_Auszahlung <= 0) printf("Bitte geben Sie mehr als 0 Euro ein!\n");
+					else printf("falsche Eingabe! Bitte wiederholen\n");
+				}
+
+				me = kunde_edit(me, tmp_Auszahlung, Auszahlung);
+				kunde_show(me);
+				//saveDB(k); //Daten speichern
 				break;
+			}
 			case 3: //Überweisung
 				break;
 			case 4:	 //Kontostand
@@ -394,7 +430,7 @@ int main() {
 				printf("Betrag: ");
 				scanf_s("%lf", &tmp_Betrag);
 				//kunde t;
-				me = kunde_edit(me, 2400000000, tmp_Betrag);
+				me = kunde_edit(me,tmp_Betrag, Einzahlung);
 				kunde_show(me);
 				break;
 			}
@@ -426,7 +462,7 @@ int main() {
 		}
 	} //1.Menu
 
-	//getchar();
+	getch();
 	return 0;
 }
 
