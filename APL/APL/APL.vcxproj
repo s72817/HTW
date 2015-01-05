@@ -64,7 +64,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="extern.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="menu.h" />
   </ItemGroup>

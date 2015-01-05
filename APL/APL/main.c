@@ -6,7 +6,6 @@
 //Eigene Dateien
 #include "menu.h"
 #include "funktionen.c"
-#include "extern.c"
 
 //#include "menu.c"
 
@@ -148,7 +147,7 @@ kunde *kunde_edit(kunde *me,double Betrag, zahlung zahlung) { //kunde *kunde_edi
 	//kunde mit veränderten Werten neu hinzufügen
 	int hashaddress = hash_function(KN);
 	kunde *konto = hashtable[hashaddress];
-	konto = malloc(sizeof(kunde));
+	konto =(kunde*) malloc(sizeof(kunde)); //ii
 	if (konto == NULL) {
 		printf("Kein Speicher für neues Element vorhanden\n");
 		return NULL;
@@ -157,7 +156,7 @@ kunde *kunde_edit(kunde *me,double Betrag, zahlung zahlung) { //kunde *kunde_edi
 	konto->ID = tmp_kunde.ID;
 	for (int i = 0; i < KN_len; i++)
 		konto->Kontonummer[i] = tmp_kunde.Kontonummer[i];
-	konto->Guthaben = 0.0; //Warum erst initialisieren ??
+	konto->Guthaben = tmp_kunde.Guthaben; //Neues Listenelement mit altem Guthaben aufladen
 	if (zahlung == Einzahlung) {
 		konto->Guthaben += Betrag; //hier wird erst drauf gerechnet
 		printf("\n\n----------------------------\n");
@@ -165,7 +164,7 @@ kunde *kunde_edit(kunde *me,double Betrag, zahlung zahlung) { //kunde *kunde_edi
 		printf("----------------------------\n\n");
 	}
 	if (zahlung == Auszahlung) {
-		konto->Guthaben = tmp_kunde.Guthaben;
+		//konto->Guthaben = tmp_kunde.Guthaben;
 		if ((tmp_kunde.Guthaben - Betrag) < 0) {
 			printf("\n\n----------------------------\n");
 			printf("Der Betrag von %.2lf Euro kann nicht ausgezahlt werden,\nda sonst ihr Konto ueberzogen wird!\n", Betrag);
