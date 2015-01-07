@@ -136,59 +136,65 @@ void kunde_delete(kunde **hashtable, long long int Kontonummer) {
 		printf("Es sind keine Daten zum Loeschen vorhanden!\n");
 }
 
-typedef enum zahlung_t { Einzahlung, Auszahlung } zahlung;
-
-kunde *kunde_edit(kunde **hashtable, kunde *me, double Betrag, zahlung zahlung) { //kunde *kunde_edit
-	kunde tmp_kunde = *me; //Darf nicht als Zeiger deklariert werden, da sonst durch löschen verloren geht!
-	//kunde löschen
-	long long int KN = arr_to_num(me->Kontonummer, KN_len);
-	kunde_delete(hashtable,KN);  //wichtig: Aufruf nach Deklaration! TODO: Deklarationen im Kopf tätigen
-
-	//kunde mit veränderten Werten neu hinzufügen
-	int hashaddress = hash_function(KN);
-	kunde *konto = hashtable[hashaddress];
-	konto =(kunde*) malloc(sizeof(kunde)); //ii
-	if (konto == NULL) {
-		printf("Kein Speicher für neues Element vorhanden\n");
-		return NULL;
-	}
-	//Struct befüllen
-	konto->ID = tmp_kunde.ID;
-	for (int i = 0; i < KN_len; i++)
-		konto->Kontonummer[i] = tmp_kunde.Kontonummer[i];
-	konto->Guthaben = tmp_kunde.Guthaben; //Neues Listenelement mit altem Guthaben aufladen
-	if (zahlung == Einzahlung) {
-		konto->Guthaben += Betrag; //hier wird erst drauf gerechnet
-		printf("\n\n----------------------------\n");
-		printf("Sie haben erfolgreich %.2lf Euro eingezahlt.\n", Betrag);
-		printf("----------------------------\n\n");
-	}
-	if (zahlung == Auszahlung) {
-		//konto->Guthaben = tmp_kunde.Guthaben;
-		if ((tmp_kunde.Guthaben - Betrag) < 0) {
-			printf("\n\n----------------------------\n");
-			printf("Der Betrag von %.2lf Euro kann nicht ausgezahlt werden,\nda sonst ihr Konto ueberzogen wird!\n", Betrag);
-			printf("----------------------------\n\n");
-			return NULL;
-		}
-		konto->Guthaben -= Betrag;
-		printf("\n\n----------------------------\n");
-		printf("Sie haben erfolgreich %.2lf Euro abgehoben.\n", Betrag);
-		printf("----------------------------\n\n");
-	}
-	
-	konto->PIN = tmp_kunde.PIN;
-	konto->isblocked = 0;
-	//Zeiger vom nächsten Element bekommt errechnete Hashadresse
-	konto->next = hashtable[hashaddress];
-	//Wert zum Hash(Array) hinzufüen
-	hashtable[hashaddress] = konto;
-
-	return konto;
+/// <summary>
+/// Einzahlung
+/// </summary>
+/// <param name="hashtable">The hashtable.</param>
+/// <param name="me">Me.</param>
+/// <param name="Betrag">The betrag.</param>
+void kunde_einzahlung(kunde **hashtable,kunde *me, double Betrag) {
+	me->Guthaben += Betrag;
+	printf("\n\n----------------------------\n");
+	printf("Sie haben erfolgreich %.2lf Euro eingezahlt.\n", Betrag);
+	printf("----------------------------\n\n");
 }
 
-kunde *einz(kunde **hashtable,kunde *me, double Betrag) {
-	me->Guthaben += Betrag;
+/// <summary>
+/// Auszahlung
+/// </summary>
+/// <param name="hashtable">The hashtable.</param>
+/// <param name="me">Me.</param>
+/// <param name="Betrag">The betrag.</param>
+void kunde_auszahlung(kunde **hashtable, kunde *me, double Betrag) {
+	double tmp_Guthaben = me->Guthaben;
+	//Verhindert, dass Konto überzogen werden kann
+	if ((tmp_Guthaben - Betrag) < 0) {
+		printf("\n\n----------------------------\n");
+		printf("Der Betrag von %.2lf Euro kann nicht ausgezahlt werden,\nda sonst ihr Konto ueberzogen wird!\n", Betrag);
+		printf("----------------------------\n\n");
+		return;
+	}
+	me->Guthaben -= Betrag;
+	printf("\n\n----------------------------\n");
+	printf("Sie haben erfolgreich %.2lf Euro abgehoben.\n", Betrag);
+	printf("----------------------------\n\n");
+
+}
+
+
+void kunde_ueberweisung(kunde **hashtable, kunde *me, double Betrag, long long int zu_Kontonummer) {
+	kunde *kunde2;
+	double tmp_Guthaben = me->Guthaben;
+	//Verhindert, dass das Konto überzogen werden kann
+	if (tmp_Guthaben - Betrag < 0) {
+		printf("\n\n----------------------------\n");
+		printf("Der Betrag von %.2lf Euro kann nicht ueberwiesen werden,\nda sonst ihr Konto ueberzogen wird.\nSie koennen maximal %.2lf Euro Ueberweisen!\n", Betrag, me->Guthaben);
+		printf("----------------------------\n\n");
+		return;
+	}
+	if (kunde_suche(hashtable, zu_Kontonummer) != NULL) {//if (kunde_suchen(all, &Kunde2, zu_Kontonummer) == 1) {
+		kunde2 = kunde_suche(hashtable, zu_Kontonummer);
+		me->Guthaben -= Betrag; //Den eigenen Kontostand minimieren
+		kunde2->Guthaben += Betrag; //Den Betrag dem anderen Konto gut schreiben
+		printf("\n\n----------------------------\n");
+		printf("Sie haben erfolgreich %.2lf Euro\nan das Konto %lld ueberwiesen\n", Betrag, zu_Kontonummer);
+		printf("----------------------------\n\n");
+	}
+	else {
+		printf("\n\n----------------------------\n");
+		printf("Die Kontonummer: %lld konnte nicht gefunden werden!\n", zu_Kontonummer);
+		printf("----------------------------\n\n");
+	}
 }
 
 
@@ -215,15 +221,15 @@ void kunde_output_all(kunde **hashtable) { //kunde **hashtabelle
 }
 
 //gibt die Entsprechenden Listenelemente mit demselben Hashwert aus
-void kunde_output_byhash(long long int KN) {
-	//int hashaddress = hash_function(KN);
-	//kunde *konto = hashtable[hashaddress];
+void kunde_output_byhash(kunde **hashtable, long long int KN) {
+	int hashaddress = hash_function(KN);
+	kunde *konto = hashtable[hashaddress];
 
-	////pointer = hashtabelle[hashaddress];
-	//while (konto != NULL) {
-	//	printf("Kontonummer: %lld Hash: %d\n",arr_to_num(konto->Kontonummer, KN_len), hash_function(arr_to_num(konto->Kontonummer, KN_len)));
-	//	konto = konto->next;
-	//}
+	//pointer = hashtabelle[hashaddress];
+	while (konto != NULL) {
+		printf("Kontonummer: %lld Hash: %d\n",arr_to_num(konto->Kontonummer, KN_len), hash_function(arr_to_num(konto->Kontonummer, KN_len)));
+		konto = konto->next;
+	}
 }
 
 void kunde_show(kunde *me) {
@@ -279,7 +285,7 @@ int main() {
 		case 1: { //kunde anlegen
 			kunde *tmp_kunde;
 			for (int i = 0; i < 10; i++){
-				tmp_kunde = kunde_add(&h, counter++);
+				tmp_kunde = kunde_add(h, counter++);
 				kunde_show(tmp_kunde);
 			}
 				
@@ -298,8 +304,8 @@ int main() {
 				else printf("Bitte geben Sie Ihre 10-stellige Kontonummer an!\n");
 			}
 			
-			if (kunde_suche(&h,tmp_KN) != NULL) {
-				me = kunde_suche(&h,tmp_KN);
+			if (kunde_suche(h,tmp_KN) != NULL) {
+				me = kunde_suche(h,tmp_KN);
 				//Abfrage, ob blockiert
 				if (me->isblocked == 1) {
 					printf("\n\n----------------------------\n");
@@ -352,9 +358,9 @@ int main() {
 					printf("Kontonummer:");
 					scanf_s("%lld", &tmp_KN);
 					while (getchar() != '\n');
-					if (kunde_suche(&h,tmp_KN) != NULL) {
+					if (kunde_suche(h,tmp_KN) != NULL) {
 						printf("Kunde gefunden!\n");
-						kunde_show(kunde_suche(&h,tmp_KN));
+						kunde_show(kunde_suche(h,tmp_KN));
 					}
 					else printf("Kontonummer nicht gefunden!\n");
 					break;	
@@ -364,8 +370,8 @@ int main() {
 					printf("Kontonummer:");
 					scanf_s("%lld", &tmp_KN);
 					while (getchar() != '\n');
-					if (kunde_suche(&h,tmp_KN) != NULL)
-						kunde_output_byhash(tmp_KN);
+					if (kunde_suche(h,tmp_KN) != NULL)
+						kunde_output_byhash(h,tmp_KN);
 					else printf("Kontonummer nicht gefunden!\n");
 					break;
 				}
@@ -401,8 +407,9 @@ int main() {
 					if (tmp_Einzahlung > 0.00 && tmp_Einzahlung <= 5000.0) break;
 					else printf("falsche Eingabe! Bitte wiederholen\n");
 				}
-				einz(&h, me, tmp_Einzahlung);
+				//einz(&h, me, tmp_Einzahlung);
 				//me = kunde_edit(h,me, tmp_Einzahlung, Einzahlung);
+				kunde_einzahlung(h, me, tmp_Einzahlung);
 				kunde_show(me);
 				//saveDB(k); //Daten speichern
 				break;
@@ -418,27 +425,77 @@ int main() {
 					else printf("falsche Eingabe! Bitte wiederholen\n");
 				}
 
-				me = kunde_edit(&h,me, tmp_Auszahlung, Auszahlung);
+				//me = kunde_edit(&h,me, tmp_Auszahlung, Auszahlung);
+				kunde_auszahlung(h, me, tmp_Auszahlung);
 				kunde_show(me);
 				//saveDB(k); //Daten speichern
 				break;
 			}
 			case 3: //Überweisung
+				printf("Ueberweisung\n");
+				long long int tmp_zuKontonummer = 0;
+				while (1) {
+					printf("Kontonummer:"); //!!!!!!
+					scanf_s("%lld", &tmp_zuKontonummer);
+					while (getchar() != '\n');
+					if (tmp_zuKontonummer >= 1000000000 && tmp_zuKontonummer <= 9999999999 && tmp_zuKontonummer != arr_to_num(me->Kontonummer, KN_len)) break; //Eingabe der eigenen Kontonummer kann schöner abgefangen werden
+					else printf("falsche Eingabe! Bitte wiederholen\n");
+				}
+
+				double tmp_Ueberweisung = 0.0;
+				printf("Betrag:"); //\n(Es koennen max. %.2lf Euro ueberwiesen werden)\n", kunden[SIDKunde].Guthaben);
+				while (1) {
+					scanf_s("%lf", &tmp_Ueberweisung);
+					while (getchar() != '\n');
+					if (tmp_Ueberweisung > 0.0) break; //if (tmp_Ueberweisung > 0 && tmp_Ueberweisung <= 1000) break;
+					else if (tmp_Ueberweisung <= 0) printf("Bitte geben Sie mehr als 0 Euro ein!\n");
+					else printf("falsche Eingabe! Bitte wiederholen\n");
+				}
+
+				//Ueberweisung(k, SID, tmp_Ueberweisung, tmp_zuKontonummer);
+				kunde_ueberweisung(h,me,tmp_Ueberweisung, tmp_zuKontonummer);
+				//saveDB(k); //Daten speichern
 				break;
 			case 4:	 //Kontostand
 				printf("\n\n----------------------------\n");
 				printf("Ihr Guthaben betraegt: %.2lf Euro\n", me->Guthaben);
 				printf("----------------------------\n");
 				break;
-			case 5: { //4 - stellige PIN aendern
-				double tmp_Betrag;
-				printf("Betrag: ");
-				scanf_s("%lf", &tmp_Betrag);
-				//kunde t;
-				me = kunde_edit(&h,me,tmp_Betrag, Einzahlung);
-				kunde_show(me);
+			case 5:  //4 - stellige PIN aendern
+				printf("4-stellige Pin aendern\n");
+				int tmp_oldPIN, tmp_newPIN;
+				//Alte PIN einlesen
+				printf("Bitte geben Sie ihre aktuelle PIN ein:\n");
+				while (1) {
+					scanf_s("%d", &tmp_oldPIN);
+					while (getchar() != '\n');
+					if (tmp_oldPIN >= 1000 && tmp_oldPIN <= 9999) break;
+					else printf("falsche Eingabe! Bitte wiederholen\n");
+				}
+				//neue PIN einlesen
+				printf("Bitte geben Sie eine neue 4-stellige PIN ein:\n");
+				while (1) {
+					scanf_s("%d", &tmp_newPIN);
+					while (getchar() != '\n');
+					if (tmp_newPIN >= 1000 && tmp_newPIN <= 9999) break;
+					else if (tmp_newPIN < 1000) printf("Bitte geben Sie eine Pin groesser gleich 1000 an!\n");
+					else printf("falsche Eingabe! Bitte wiederholen\n");
+				}
+
+				//Prüfen der PIN und der KONTONUMMER AUSLAGERN!!!
+				if (me->PIN == tmp_oldPIN) {
+					me->PIN = tmp_newPIN;
+					//saveDB(kunden); //neue PIN speichern!
+					printf("\n\n----------------------------\n");
+					printf("Ihre PIN wurde erfolgreich auf %d geaendert.\n", tmp_newPIN);
+					printf("----------------------------\n\n");
+
+				}
+				else {
+					printf("Sie haben eine falsche PIN eingegeben!\n");
+				}
+
 				break;
-			}
 			case 6: //Kundendaten anzeigen
 				kunde_show(me);
 				break;
@@ -451,7 +508,7 @@ int main() {
 				if (res == 'j' || res == 'J') {
 					printf("Ihr Verhaeltnis ist nun beendet!\n");
 					if (me->Guthaben != 0.0) printf("Es werden Ihnen nun noch %.2lf Euro augezahlt.\n", me->Guthaben);
-					kunde_delete(&h,arr_to_num(me->Kontonummer, KN_len));
+					kunde_delete(h, arr_to_num(me->Kontonummer, KN_len));
 					islogged = 0;
 					//break;
 				}
