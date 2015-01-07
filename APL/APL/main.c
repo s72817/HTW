@@ -30,7 +30,7 @@ typedef struct kunde_t{
 /// <summary>
 /// Die Hashtabelle (Hash-Array) mit den max. Einträgen
 /// </summary>
-kunde *hashtable[MaxHash];
+//kunde *hashtable[MaxHash];
 
 /// <summary>
 /// Die Hashfunktion. 
@@ -48,7 +48,7 @@ int hash_function(long long int Kontonummer) {
 /// <param name="konto">Zeiger auf Konto-Liste</param>
 /// <param name="counter">Zähler als int</param>
 /// <returns>angelegten Kunde</returns>
-kunde *kunde_add(int counter) {
+kunde *kunde_add(kunde **hashtable, int counter) {
 	int KN_Arr[10];
 	get_acc_no(KN_Arr, counter);
 
@@ -85,7 +85,7 @@ kunde *kunde_add(int counter) {
 /// <param name="konto">kundenliste</param>
 /// <param name="Kontonummer">Kontonummer als long long</param>
 /// <returns>struct kunde</returns>
-kunde *kunde_suche(long long int Kontonummer) {
+kunde *kunde_suche(kunde **hashtable, long long int Kontonummer) {
 	int hashaddress = hash_function(Kontonummer);
 	kunde *konto = hashtable[hashaddress];
 	kunde *me = NULL;
@@ -106,7 +106,7 @@ kunde *kunde_suche(long long int Kontonummer) {
 /// <param name="konto">Zeiger auf Konto</param>
 /// <param name="hashtabelle">Hashtabelle</param>
 /// <param name="KN">Kontonummer</param>
-void kunde_delete(long long int Kontonummer) {
+void kunde_delete(kunde **hashtable, long long int Kontonummer) {
 	kunde *zeiger, *zeiger1; //Hilfsstrukturen
 	int hashaddress = hash_function(Kontonummer); //Hashadresse berechnen
 	kunde *konto = hashtable[hashaddress]; //Liste mit entsprechenden Elementen füllen
@@ -138,11 +138,11 @@ void kunde_delete(long long int Kontonummer) {
 
 typedef enum zahlung_t { Einzahlung, Auszahlung } zahlung;
 
-kunde *kunde_edit(kunde *me,double Betrag, zahlung zahlung) { //kunde *kunde_edit
+kunde *kunde_edit(kunde **hashtable, kunde *me, double Betrag, zahlung zahlung) { //kunde *kunde_edit
 	kunde tmp_kunde = *me; //Darf nicht als Zeiger deklariert werden, da sonst durch löschen verloren geht!
 	//kunde löschen
 	long long int KN = arr_to_num(me->Kontonummer, KN_len);
-	kunde_delete(KN);  //wichtig: Aufruf nach Deklaration! TODO: Deklarationen im Kopf tätigen
+	kunde_delete(hashtable,KN);  //wichtig: Aufruf nach Deklaration! TODO: Deklarationen im Kopf tätigen
 
 	//kunde mit veränderten Werten neu hinzufügen
 	int hashaddress = hash_function(KN);
@@ -187,6 +187,10 @@ kunde *kunde_edit(kunde *me,double Betrag, zahlung zahlung) { //kunde *kunde_edi
 	return konto;
 }
 
+kunde *einz(kunde **hashtable,kunde *me, double Betrag) {
+	me->Guthaben += Betrag;
+}
+
 
 /// <summary>
 /// Prüfen der Kontonummer & PIN
@@ -200,8 +204,8 @@ int kunde_pruefen(kunde *me, long long int Kontonummer, int PIN) {
 }
 
 
-void kunde_output_all() { //kunde **hashtabelle
-	for (int i = 0; i < MaxHash; i++){
+void kunde_output_all(kunde **hashtable) { //kunde **hashtabelle
+	for (int i = 0; i < 7; i++){
 		kunde *konto = hashtable[i];
 		while (konto != NULL) {
 			printf("Kontonummer: %lld Hash: %d\n",arr_to_num(konto->Kontonummer, KN_len), hash_function(arr_to_num(konto->Kontonummer, KN_len)));
@@ -212,14 +216,14 @@ void kunde_output_all() { //kunde **hashtabelle
 
 //gibt die Entsprechenden Listenelemente mit demselben Hashwert aus
 void kunde_output_byhash(long long int KN) {
-	int hashaddress = hash_function(KN);
-	kunde *konto = hashtable[hashaddress];
+	//int hashaddress = hash_function(KN);
+	//kunde *konto = hashtable[hashaddress];
 
-	//pointer = hashtabelle[hashaddress];
-	while (konto != NULL) {
-		printf("Kontonummer: %lld Hash: %d\n",arr_to_num(konto->Kontonummer, KN_len), hash_function(arr_to_num(konto->Kontonummer, KN_len)));
-		konto = konto->next;
-	}
+	////pointer = hashtabelle[hashaddress];
+	//while (konto != NULL) {
+	//	printf("Kontonummer: %lld Hash: %d\n",arr_to_num(konto->Kontonummer, KN_len), hash_function(arr_to_num(konto->Kontonummer, KN_len)));
+	//	konto = konto->next;
+	//}
 }
 
 void kunde_show(kunde *me) {
@@ -258,7 +262,7 @@ int main() {
 	kunde *me = NULL; //Aktuelles Object
 
 	//kunde *hashtabelle[MaxHash];
-
+	kunde *h[MaxHash]; //Hashtabelle
 	//kunde *hashtable[MaxHash]; //Hash-Tabelle
 
 	int counter = 0;
@@ -274,9 +278,11 @@ int main() {
 		switch (auswahl) {
 		case 1: { //kunde anlegen
 			kunde *tmp_kunde;
-			for (int i = 0; i < 10; i++)
-				tmp_kunde = kunde_add(counter++);
-			kunde_show(tmp_kunde);
+			for (int i = 0; i < 10; i++){
+				tmp_kunde = kunde_add(&h, counter++);
+				kunde_show(tmp_kunde);
+			}
+				
 
 			break;
 		}
@@ -292,8 +298,8 @@ int main() {
 				else printf("Bitte geben Sie Ihre 10-stellige Kontonummer an!\n");
 			}
 			
-			if (kunde_suche(tmp_KN) != NULL) {
-				me = kunde_suche(tmp_KN);
+			if (kunde_suche(&h,tmp_KN) != NULL) {
+				me = kunde_suche(&h,tmp_KN);
 				//Abfrage, ob blockiert
 				if (me->isblocked == 1) {
 					printf("\n\n----------------------------\n");
@@ -346,9 +352,9 @@ int main() {
 					printf("Kontonummer:");
 					scanf_s("%lld", &tmp_KN);
 					while (getchar() != '\n');
-					if (kunde_suche(tmp_KN) != NULL) {
+					if (kunde_suche(&h,tmp_KN) != NULL) {
 						printf("Kunde gefunden!\n");
-						kunde_show(kunde_suche(tmp_KN));
+						kunde_show(kunde_suche(&h,tmp_KN));
 					}
 					else printf("Kontonummer nicht gefunden!\n");
 					break;	
@@ -358,13 +364,13 @@ int main() {
 					printf("Kontonummer:");
 					scanf_s("%lld", &tmp_KN);
 					while (getchar() != '\n');
-					if (kunde_suche(tmp_KN) != NULL)
+					if (kunde_suche(&h,tmp_KN) != NULL)
 						kunde_output_byhash(tmp_KN);
 					else printf("Kontonummer nicht gefunden!\n");
 					break;
 				}
 				case 3: //kunde output all
-					kunde_output_all();
+					kunde_output_all(h);
 					break;
 				case 4: break; //zurück
 				
@@ -395,8 +401,8 @@ int main() {
 					if (tmp_Einzahlung > 0.00 && tmp_Einzahlung <= 5000.0) break;
 					else printf("falsche Eingabe! Bitte wiederholen\n");
 				}
-
-				me = kunde_edit(me, tmp_Einzahlung, Einzahlung);
+				einz(&h, me, tmp_Einzahlung);
+				//me = kunde_edit(h,me, tmp_Einzahlung, Einzahlung);
 				kunde_show(me);
 				//saveDB(k); //Daten speichern
 				break;
@@ -412,7 +418,7 @@ int main() {
 					else printf("falsche Eingabe! Bitte wiederholen\n");
 				}
 
-				me = kunde_edit(me, tmp_Auszahlung, Auszahlung);
+				me = kunde_edit(&h,me, tmp_Auszahlung, Auszahlung);
 				kunde_show(me);
 				//saveDB(k); //Daten speichern
 				break;
@@ -429,7 +435,7 @@ int main() {
 				printf("Betrag: ");
 				scanf_s("%lf", &tmp_Betrag);
 				//kunde t;
-				me = kunde_edit(me,tmp_Betrag, Einzahlung);
+				me = kunde_edit(&h,me,tmp_Betrag, Einzahlung);
 				kunde_show(me);
 				break;
 			}
@@ -445,7 +451,7 @@ int main() {
 				if (res == 'j' || res == 'J') {
 					printf("Ihr Verhaeltnis ist nun beendet!\n");
 					if (me->Guthaben != 0.0) printf("Es werden Ihnen nun noch %.2lf Euro augezahlt.\n", me->Guthaben);
-					kunde_delete(arr_to_num(me->Kontonummer, KN_len));
+					kunde_delete(&h,arr_to_num(me->Kontonummer, KN_len));
 					islogged = 0;
 					//break;
 				}
