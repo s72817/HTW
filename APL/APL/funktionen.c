@@ -5,7 +5,7 @@
 void num_to_arr(int arr[], int len, long long int num);
 long long int arr_to_num(int *arr, int len);
 int digits(long long int x);
-void get_acc_no(int *Arr, int counter);
+long long int get_acc_no(int counter);
 int check_acc_no(int acc_no[]);
 
 /// <summary>
@@ -27,12 +27,12 @@ void num_to_arr(int arr[], int len, long long int num) {
 /// <param name="arr">int Array</param>
 /// <param name="len">Länge des Arrays</param>
 /// <returns>long long Integer</returns>
-long long int arr_to_num(int *arr, int len) {
-	long long int k = 0;
-	for (int i = 0; i < len; i++)
-		k = 10 * k + arr[i];
-	return k;
-}
+//long long int arr_to_num(int *arr, int len) {
+//	long long int k = 0;
+//	for (int i = 0; i < len; i++)
+//		k = 10 * k + arr[i];
+//	return k;
+//}
 
 //TODO!
 /// <summary>
@@ -43,8 +43,7 @@ long long int arr_to_num(int *arr, int len) {
 //int digits(long long int x) { return log10(x) + 1; }
 int digits(long long int x) {
 	int count = 0;
-	while (x != 0)
-	{
+	while (x != 0) {
 		x /= 10;             /* n=n/10 */
 		++count;
 	}
@@ -58,17 +57,20 @@ int digits(long long int x) {
 /// </summary>
 /// <param name="Arr">The arr.</param>
 /// <param name="counter">The counter.</param>
-void get_acc_no(int *Arr, int counter) {
-	//1. und 2. Stellle = Bankcode
-	Arr[0] = 2; Arr[1] = 4;
-	for (int i = 2; i < KN_len; i++)
-		Arr[i] = 0;
+long long int get_kontonummer(int counter) {
+	long long int KN = 2400000000;
+	return KN + counter;
+	
+	////1. und 2. Stellle = Bankcode
+	//Arr[0] = 2; Arr[1] = 4;
+	//for (int i = 2; i < KN_len; i++)
+	//	Arr[i] = 0;
 
-	long long int sum = arr_to_num(Arr, KN_len);
-	sum += counter;
+	//long long int sum = arr_to_num(Arr, KN_len);
+	//sum += counter;
 
-	//long long int counter = arr_to_num(Arr, KN_len);
-	num_to_arr(Arr, KN_len, sum);
+	////long long int counter = arr_to_num(Arr, KN_len);
+	//num_to_arr(Arr, KN_len, sum);
 
 	////1. und 2. Stellle = Bankcode
 	//Arr[0] = 2; Arr[1] = 4;

@@ -7,17 +7,14 @@
 #include "menu.h"
 #include "funktionen.c"
 
-//#include "menu.c"
-
-#define MaxHash 10
-#define KN_len 10 //Anz der Ziffernn der Kontonummer
+#define MAXHASH 10
 
 /// <summary>
 /// Kundenstruktur
 /// </summary>
 typedef struct kunde_t{
 	int ID;
-	int Kontonummer[10]; //10-stellig
+	long long int Kontonummer; //int Kontonummer[10]; //10-stellig
 	double Guthaben;
 	unsigned int PIN;
 	int isblocked;
@@ -49,11 +46,10 @@ int hash_function(long long int Kontonummer) {
 /// <param name="counter">Zähler als int</param>
 /// <returns>angelegten Kunde</returns>
 kunde *kunde_add(kunde **hashtable, int counter) {
-	int KN_Arr[10];
-	get_acc_no(KN_Arr, counter);
+	long long int Kontonummer = get_kontonummer(counter);
 
 	//Hash Wert generienen
-	int hashaddress = hash_function(arr_to_num(KN_Arr, KN_len)); //verbesserungswürdig
+	int hashaddress = hash_function(Kontonummer); //verbesserungswürdig
 	/* Zeiger auf errechnete Tabellenadresse durch hash_funktion */
 	kunde *konto = hashtable[hashaddress];
 
@@ -66,8 +62,9 @@ kunde *kunde_add(kunde **hashtable, int counter) {
 	//Struct befüllen
 	
 	konto->ID = counter;
-	for (int i = 0; i < KN_len; i++)
-		konto->Kontonummer[i] = KN_Arr[i];
+	konto->Kontonummer = Kontonummer;
+	/*for (int i = 0; i < KN_len; i++)
+		konto->Kontonummer[i] = KN_Arr[i];*/
 	konto->Guthaben = 0.0;
 	konto->PIN = GetRandPIN(counter);
 	konto->isblocked = 0;
@@ -90,7 +87,7 @@ kunde *kunde_suche(kunde **hashtable, long long int Kontonummer) {
 	kunde *konto = hashtable[hashaddress];
 	kunde *me = NULL;
 	while (konto != NULL) {
-		if (arr_to_num(konto->Kontonummer, KN_len) == Kontonummer) {
+		if (konto->Kontonummer == Kontonummer) {
 			me = konto;
 			break;
 		}
@@ -113,7 +110,7 @@ void kunde_delete(kunde **hashtable, long long int Kontonummer) {
 
 	//Wenn erstes Element
 	if (konto != NULL) {
-		if (arr_to_num(konto->Kontonummer, KN_len) == Kontonummer) { //1.Element
+		if (konto->Kontonummer == Kontonummer) { //1.Element
 			zeiger = konto->next; //Hilfsstruktur wird mit dem nächsten Zeiger befüllt
 			free(konto); //Element löschen
 			hashtable[hashaddress] = zeiger; //
@@ -122,7 +119,7 @@ void kunde_delete(kunde **hashtable, long long int Kontonummer) {
 			zeiger = konto;
 			while (zeiger->next != NULL) {
 				zeiger1 = zeiger->next;
-				if (arr_to_num(zeiger1->Kontonummer, KN_len) == Kontonummer) {
+				if (zeiger1->Kontonummer == Kontonummer) {
 					zeiger->next = zeiger1->next;
 					free(zeiger1);
 					hashtable[hashaddress] = konto;
@@ -172,6 +169,13 @@ void kunde_auszahlung(kunde **hashtable, kunde *me, double Betrag) {
 }
 
 
+/// <summary>
+/// Überweisung
+/// </summary>
+/// <param name="hashtable">The hashtable.</param>
+/// <param name="me">Me.</param>
+/// <param name="Betrag">The betrag.</param>
+/// <param name="zu_Kontonummer">The zu_ kontonummer.</param>
 void kunde_ueberweisung(kunde **hashtable, kunde *me, double Betrag, long long int zu_Kontonummer) {
 	kunde *kunde2;
 	double tmp_Guthaben = me->Guthaben;
@@ -206,47 +210,72 @@ void kunde_ueberweisung(kunde **hashtable, kunde *me, double Betrag, long long i
 /// <param name="PIN">The pin.</param>
 /// <returns>0 oder 1</returns>
 int kunde_pruefen(kunde *me, long long int Kontonummer, int PIN) {
-	return ((arr_to_num(me->Kontonummer, KN_len) == Kontonummer) && (me->PIN == PIN));
+	return ((me->Kontonummer == Kontonummer) && (me->PIN == PIN));
 }
 
 
-void kunde_output_all(kunde **hashtable) { //kunde **hashtabelle
-	for (int i = 0; i < 7; i++){
-		kunde *konto = hashtable[i];
-		while (konto != NULL) {
-			printf("Kontonummer: %lld Hash: %d\n",arr_to_num(konto->Kontonummer, KN_len), hash_function(arr_to_num(konto->Kontonummer, KN_len)));
-			konto = konto->next;
-		}
-	}
+/// <summary>
+/// Alle Listenelemente der Hashtabelle werden ausgegeben
+/// </summary>
+/// <param name="hashtable">The hashtable.</param>
+void kunde_output_all(kunde **hashtable) {
+	////for (int i = 0; i < 7; i++){
+	//	kunde *konto = hashtable[i];
+	//	while (konto != NULL) {
+	//		printf("Kontonummer: %lld Hash: %d\n",konto->Kontonummer, hash_function(konto->Kontonummer));
+	//		konto = konto->next;
+	//	}
+	////}
 }
 
-//gibt die Entsprechenden Listenelemente mit demselben Hashwert aus
+
+/// <summary>
+/// gibt die Entsprechenden Listenelemente mit demselben Hashwert aus
+/// </summary>
+/// <param name="hashtable">The hashtable.</param>
+/// <param name="KN">The kn.</param>
 void kunde_output_byhash(kunde **hashtable, long long int KN) {
 	int hashaddress = hash_function(KN);
 	kunde *konto = hashtable[hashaddress];
 
 	//pointer = hashtabelle[hashaddress];
 	while (konto != NULL) {
-		printf("Kontonummer: %lld Hash: %d\n",arr_to_num(konto->Kontonummer, KN_len), hash_function(arr_to_num(konto->Kontonummer, KN_len)));
+		printf("Kontonummer: %lld Hash: %d\n",konto->Kontonummer, hash_function(konto->Kontonummer));
 		konto = konto->next;
 	}
 }
 
+
+/// <summary>
+/// einzelnen Kunden mit Kundendaten ausgeben
+/// </summary>
+/// <param name="me">Me.</param>
 void kunde_show(kunde *me) {
 	//Ausgabe
 	printf("\n----------------------------\n");
 	//printf("Sie haben erfolgreich einen neuen Kunden angelegt!\n");
 	printf("KundenID......: %d\n", me->ID);
-	printf("Kontonummer...: %lld", arr_to_num(me->Kontonummer, KN_len));
+	printf("Kontonummer...: %lld", me->Kontonummer);
 	printf("\nGuthaben......: %.2lf Euro\n", me->Guthaben);
 	printf("Pin...........: %d\n", me->PIN);
 	printf("----------------------------\n\n");
 }
 
 
+/// <summary>
+/// Hauptroutine
+/// </summary>
+/// <returns></returns>
 int main() {
 	menu *mymenu = NULL; // init. die Liste mit NULL = leere liste
 
+	kunde *me = NULL; //Aktuelles Object
+	kunde *h[MAXHASH]; //Hashtabelle
+
+	int counter = 0, islogged = 0; //Kundenzähler, geloggt
+
+	//Dynamisches Menu hinzufügen
+	//(Zeiger auf Liste, "Elementname", Level)
 	menu_add(&mymenu, "Kunde anlegen", 1);
 	menu_add(&mymenu, "Anmelden", 1);
 	menu_add(&mymenu, "Beenden", 1);
@@ -264,18 +293,10 @@ int main() {
 	menu_add(&mymenu, "Alle Kunden mit Hash ausgeben", 3);
 	menu_add(&mymenu, "zurueck", 3);
 
-	//kunde *k = NULL; //komplette Liste
-	kunde *me = NULL; //Aktuelles Object
 
-	//kunde *hashtabelle[MaxHash];
-	kunde *h[MaxHash]; //Hashtabelle
-	//kunde *hashtable[MaxHash]; //Hash-Tabelle
+	
 
-	int counter = 0;
-	int islogged = 0;
-
-
-	//Menu
+	//1. Menu
 	int auswahl;
 	while (1) { //1.Menuebene
 		menu_show(mymenu, 1); //Menu erzeugen
@@ -309,7 +330,7 @@ int main() {
 				//Abfrage, ob blockiert
 				if (me->isblocked == 1) {
 					printf("\n\n----------------------------\n");
-					printf("Die Kontonummer %lld ist blockiert.\nBitte wenden Sie sich an den naechsten\nfreien Service-Mitarbeiter.\n", arr_to_num(me->Kontonummer, KN_len));
+					printf("Die Kontonummer %lld ist blockiert.\nBitte wenden Sie sich an den naechsten\nfreien Service-Mitarbeiter.\n", me->Kontonummer);
 					printf("----------------------------\n");
 					break;
 				}
@@ -438,7 +459,7 @@ int main() {
 					printf("Kontonummer:"); //!!!!!!
 					scanf_s("%lld", &tmp_zuKontonummer);
 					while (getchar() != '\n');
-					if (tmp_zuKontonummer >= 1000000000 && tmp_zuKontonummer <= 9999999999 && tmp_zuKontonummer != arr_to_num(me->Kontonummer, KN_len)) break; //Eingabe der eigenen Kontonummer kann schöner abgefangen werden
+					if (tmp_zuKontonummer >= 1000000000 && tmp_zuKontonummer <= 9999999999 && tmp_zuKontonummer != me->Kontonummer) break; //Eingabe der eigenen Kontonummer kann schöner abgefangen werden
 					else printf("falsche Eingabe! Bitte wiederholen\n");
 				}
 
@@ -508,7 +529,7 @@ int main() {
 				if (res == 'j' || res == 'J') {
 					printf("Ihr Verhaeltnis ist nun beendet!\n");
 					if (me->Guthaben != 0.0) printf("Es werden Ihnen nun noch %.2lf Euro augezahlt.\n", me->Guthaben);
-					kunde_delete(h, arr_to_num(me->Kontonummer, KN_len));
+					kunde_delete(h, me->Kontonummer);
 					islogged = 0;
 					//break;
 				}
