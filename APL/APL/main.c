@@ -25,7 +25,7 @@ typedef struct kunde_t{
 
 
 /// <summary>
-/// Die Hashtabelle (Hash-Array) mit den max. Einträgen
+/// Die Hashtabelle (Hash-Array) mit den max. EintrÃ¤gen
 /// </summary>
 //kunde *hashtable[MaxHash];
 
@@ -33,33 +33,33 @@ typedef struct kunde_t{
 /// Die Hashfunktion. 
 /// </summary>
 /// <param name="Kontonummer">Kontonummer als unsigned long int</param>
-/// <returns>Gibt einen Wert zwischen 0 und MaxHash zurück.</returns>
+/// <returns>Gibt einen Wert zwischen 0 und MaxHash zurÃ¼ck.</returns>
 int hash_function(long long int Kontonummer) {
-	//Für m sollten Sie idealerweise eine Primzahl so nahe wie möglich am höchsten Index wählen.*/
+	//FÃ¼r m sollten Sie idealerweise eine Primzahl so nahe wie mÃ¶glich am hÃ¶chsten Index wÃ¤hlen.*/
 	return Kontonummer % 7;
 }
 
 /// <summary>
-/// Initialisiert und fügt einen Kunden der Liste hinzu.
+/// Initialisiert und fÃ¼gt einen Kunden der Liste hinzu.
 /// </summary>
 /// <param name="konto">Zeiger auf Konto-Liste</param>
-/// <param name="counter">Zähler als int</param>
+/// <param name="counter">ZÃ¤hler als int</param>
 /// <returns>angelegten Kunde</returns>
 kunde *kunde_add(kunde **hashtable, int counter) {
 	long long int Kontonummer = get_kontonummer(counter);
 
 	//Hash Wert generienen
-	int hashaddress = hash_function(Kontonummer); //verbesserungswürdig
+	int hashaddress = hash_function(Kontonummer); //verbesserungswÃ¼rdig
 	/* Zeiger auf errechnete Tabellenadresse durch hash_funktion */
 	kunde *konto = hashtable[hashaddress];
 
-	/* Speicher für neues Element allozieren */
-	konto = malloc(sizeof(kunde));
+	/* Speicher fÃ¼r neues Element allozieren */
+	konto = (kunde*)malloc(sizeof(kunde));
 	if (konto == NULL) {
-		printf("Kein Speicher für neues Element vorhanden\n");
+		printf("Kein Speicher fÃ¼r neues Element vorhanden\n");
 		return NULL;
 	}
-	//Struct befüllen
+	//Struct befÃ¼llen
 	
 	konto->ID = counter;
 	konto->Kontonummer = Kontonummer;
@@ -68,9 +68,9 @@ kunde *kunde_add(kunde **hashtable, int counter) {
 	konto->Guthaben = 0.0;
 	konto->PIN = GetRandPIN(counter);
 	konto->isblocked = 0;
-	//Zeiger vom nächsten Element bekommt errechnete Hashadresse
+	//Zeiger vom nÃ¤chsten Element bekommt errechnete Hashadresse
 	konto->next = hashtable[hashaddress];
-	//Wert zum Hash(Array) hinzufüen
+	//Wert zum Hash(Array) hinzufÃ¼en
 	hashtable[hashaddress] = konto;
 
 	return konto;
@@ -98,7 +98,7 @@ kunde *kunde_suche(kunde **hashtable, long long int Kontonummer) {
 
 
 /// <summary>
-/// Löscht einen Kunden unter Angabe seiner Kontonummer
+/// LÃ¶scht einen Kunden unter Angabe seiner Kontonummer
 /// </summary>
 /// <param name="konto">Zeiger auf Konto</param>
 /// <param name="hashtabelle">Hashtabelle</param>
@@ -106,13 +106,13 @@ kunde *kunde_suche(kunde **hashtable, long long int Kontonummer) {
 void kunde_delete(kunde **hashtable, long long int Kontonummer) {
 	kunde *zeiger, *zeiger1; //Hilfsstrukturen
 	int hashaddress = hash_function(Kontonummer); //Hashadresse berechnen
-	kunde *konto = hashtable[hashaddress]; //Liste mit entsprechenden Elementen füllen
+	kunde *konto = hashtable[hashaddress]; //Liste mit entsprechenden Elementen fÃ¼llen
 
 	//Wenn erstes Element
 	if (konto != NULL) {
 		if (konto->Kontonummer == Kontonummer) { //1.Element
-			zeiger = konto->next; //Hilfsstruktur wird mit dem nächsten Zeiger befüllt
-			free(konto); //Element löschen
+			zeiger = konto->next; //Hilfsstruktur wird mit dem nÃ¤chsten Zeiger befÃ¼llt
+			free(konto); //Element lÃ¶schen
 			hashtable[hashaddress] = zeiger; //
 		}
 		else {
@@ -154,7 +154,7 @@ void kunde_einzahlung(kunde **hashtable,kunde *me, double Betrag) {
 /// <param name="Betrag">The betrag.</param>
 void kunde_auszahlung(kunde **hashtable, kunde *me, double Betrag) {
 	double tmp_Guthaben = me->Guthaben;
-	//Verhindert, dass Konto überzogen werden kann
+	//Verhindert, dass Konto Ã¼berzogen werden kann
 	if ((tmp_Guthaben - Betrag) < 0) {
 		printf("\n\n----------------------------\n");
 		printf("Der Betrag von %.2lf Euro kann nicht ausgezahlt werden,\nda sonst ihr Konto ueberzogen wird!\n", Betrag);
@@ -170,7 +170,7 @@ void kunde_auszahlung(kunde **hashtable, kunde *me, double Betrag) {
 
 
 /// <summary>
-/// Überweisung
+/// Ãœberweisung
 /// </summary>
 /// <param name="hashtable">The hashtable.</param>
 /// <param name="me">Me.</param>
@@ -179,7 +179,7 @@ void kunde_auszahlung(kunde **hashtable, kunde *me, double Betrag) {
 void kunde_ueberweisung(kunde **hashtable, kunde *me, double Betrag, long long int zu_Kontonummer) {
 	kunde *kunde2;
 	double tmp_Guthaben = me->Guthaben;
-	//Verhindert, dass das Konto überzogen werden kann
+	//Verhindert, dass das Konto Ã¼berzogen werden kann
 	if (tmp_Guthaben - Betrag < 0) {
 		printf("\n\n----------------------------\n");
 		printf("Der Betrag von %.2lf Euro kann nicht ueberwiesen werden,\nda sonst ihr Konto ueberzogen wird.\nSie koennen maximal %.2lf Euro Ueberweisen!\n", Betrag, me->Guthaben);
@@ -203,7 +203,7 @@ void kunde_ueberweisung(kunde **hashtable, kunde *me, double Betrag, long long i
 
 
 /// <summary>
-/// Prüfen der Kontonummer & PIN
+/// PrÃ¼fen der Kontonummer & PIN
 /// </summary>
 /// <param name="me">Me.</param>
 /// <param name="Kontonummer">The kontonummer.</param>
@@ -272,9 +272,9 @@ int main() {
 	kunde *me = NULL; //Aktuelles Object
 	kunde *h[MAXHASH]; //Hashtabelle
 
-	int counter = 0, islogged = 0; //Kundenzähler, geloggt
+	int counter = 0, islogged = 0; //KundenzÃ¤hler, geloggt
 
-	//Dynamisches Menu hinzufügen
+	//Dynamisches Menu hinzufÃ¼gen
 	//(Zeiger auf Liste, "Elementname", Level)
 	menu_add(&mymenu, "Kunde anlegen", 1);
 	menu_add(&mymenu, "Anmelden", 1);
@@ -314,12 +314,12 @@ int main() {
 			break;
 		}
 		case 2: { //kunde anmelden
-			int zaehler = 0; //Zähler für PIN-Versuche initialisieren
-			long long int tmp_KN; int tmp_PIN = 0; //Temporäre Variablen für Kontonummer und PIN anlegen
+			int zaehler = 0; //ZÃ¤hler fÃ¼r PIN-Versuche initialisieren
+			long long int tmp_KN; int tmp_PIN = 0; //TemporÃ¤re Variablen fÃ¼r Kontonummer und PIN anlegen
 			
 			while (1) {
 				printf("Kontonummer: ");
-				scanf_s("%lld", &tmp_KN); //tmp_Kontonummer mit Benutzereingabe füllen
+				scanf_s("%lld", &tmp_KN); //tmp_Kontonummer mit Benutzereingabe fÃ¼llen
 				while (getchar() != '\n');
 				if (tmp_KN >= 1000000000 && tmp_KN <= 9999999999) break; //Wenn Kontonummer zwischen 1000 und 9999 liegt, dann weiter
 				else printf("Bitte geben Sie Ihre 10-stellige Kontonummer an!\n");
@@ -350,8 +350,8 @@ int main() {
 						break;
 					}
 					else {
-						zaehler += 1; //Pin Eingabemöglichkeit wird um eins hoch gesetzt
-						//Prüfen, ob 3x hintereinander die falsche PIN eingegeben wurde!
+						zaehler += 1; //Pin EingabemÃ¶glichkeit wird um eins hoch gesetzt
+						//PrÃ¼fen, ob 3x hintereinander die falsche PIN eingegeben wurde!
 						if (zaehler == 3) {
 							printf("Sie haben 3x hintereinander\ndie falsche PIN eingegeben!\nSie sind nun blockiert!");
 							me->isblocked = 1; //Kunde wird hiermit blockiert
@@ -359,7 +359,7 @@ int main() {
 							break;
 						}
 					}
-					// <3, weil bis 2 gezählt wird
+					// <3, weil bis 2 gezÃ¤hlt wird
 					if (zaehler < 3) printf("Bitte wiederholen (%d. Versuch)\n", zaehler + 1);
 				}
 			}
@@ -399,7 +399,7 @@ int main() {
 				case 3: //kunde output all
 					kunde_output_all(h);
 					break;
-				case 4: break; //zurück
+				case 4: break; //zurÃ¼ck
 				
 				} 
 			} while (auswahl != 4); //wenn x, dann schluss!
@@ -411,7 +411,7 @@ int main() {
 
 
 		while (1) { //2.Menu
-			if (islogged == 0) break; //Wichtig, da sonst nicht zurück
+			if (islogged == 0) break; //Wichtig, da sonst nicht zurÃ¼ck
 			menu_show(mymenu, 2); //Menu erzeugen
 			printf("\nIhre Wahl:\n");
 			scanf_s("%d", &auswahl);
@@ -452,14 +452,14 @@ int main() {
 				//saveDB(k); //Daten speichern
 				break;
 			}
-			case 3: //Überweisung
+			case 3: //Ãœberweisung
 				printf("Ueberweisung\n");
 				long long int tmp_zuKontonummer = 0;
 				while (1) {
 					printf("Kontonummer:"); //!!!!!!
 					scanf_s("%lld", &tmp_zuKontonummer);
 					while (getchar() != '\n');
-					if (tmp_zuKontonummer >= 1000000000 && tmp_zuKontonummer <= 9999999999 && tmp_zuKontonummer != me->Kontonummer) break; //Eingabe der eigenen Kontonummer kann schöner abgefangen werden
+					if (tmp_zuKontonummer >= 1000000000 && tmp_zuKontonummer <= 9999999999 && tmp_zuKontonummer != me->Kontonummer) break; //Eingabe der eigenen Kontonummer kann schÃ¶ner abgefangen werden
 					else printf("falsche Eingabe! Bitte wiederholen\n");
 				}
 
@@ -503,7 +503,7 @@ int main() {
 					else printf("falsche Eingabe! Bitte wiederholen\n");
 				}
 
-				//Prüfen der PIN und der KONTONUMMER AUSLAGERN!!!
+				//PrÃ¼fen der PIN und der KONTONUMMER AUSLAGERN!!!
 				if (me->PIN == tmp_oldPIN) {
 					me->PIN = tmp_newPIN;
 					//saveDB(kunden); //neue PIN speichern!
@@ -520,7 +520,7 @@ int main() {
 			case 6: //Kundendaten anzeigen
 				kunde_show(me);
 				break;
-			case 7: //Konto löschen
+			case 7: //Konto lÃ¶schen
 				printf("Wollen Sie ihre Bank-Beziehung wirklich beenden?\n");
 				printf("(J)a oder (N)ein\n");
 				char res = (char)getche();
@@ -659,7 +659,7 @@ printf("ungleich");*/
 ////	array1[i] = i;
 ////	array2[i] = i;
 ////}*/
-//////array2[5] = 100; /* Verändert array2 an Pos. 5. */
+//////array2[5] = 100; /* VerÃ¤ndert array2 an Pos. 5. */
 
 //if (memcmp(array1, array2, sizeof(array1)) == 0)
 //	printf("Beide Arrays haben den gleichen Inhalt\n");
