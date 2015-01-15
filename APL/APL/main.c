@@ -270,7 +270,7 @@ int main() {
 	menu *mymenu = NULL; // init. die Liste mit NULL = leere liste
 
 	kunde *me = NULL; //Aktuelles Object
-	kunde *h[MAXHASH]; //Hashtabelle
+	kunde *h[MAXHASH] = {NULL};; //Hashtabelle
 
 	int counter = 0, islogged = 0; //Kundenzähler, geloggt
 
