@@ -217,13 +217,13 @@ bool kunde_pruefen(kunde *me, long long int Kontonummer, int PIN) {
 /// </summary>
 /// <param name="hashtable">The hashtable.</param>
 void kunde_output_all(kunde **hashtable) {
-	////for (int i = 0; i < 7; i++){
-	//	kunde *konto = hashtable[i];
-	//	while (konto != NULL) {
-	//		printf("Kontonummer: %lld Hash: %d\n",konto->Kontonummer, hash_function(konto->Kontonummer));
-	//		konto = konto->next;
-	//	}
-	////}
+	for (int i = 0; i < MAXHASH; i++){
+		kunde *konto = hashtable[i];
+		while (konto != NULL) {
+			printf("Kontonummer: %lld Hash: %d\n",konto->Kontonummer, hash_function(konto->Kontonummer));
+			konto = konto->next;
+		}
+	}
 }
 
 
@@ -268,9 +268,13 @@ int main() {
 	menu *mymenu = NULL; // init. die Liste mit NULL = leere liste
 
 	kunde *me = NULL; //Aktuelles Object
-	kunde *h[MAXHASH] = {NULL}; //Hashtabelle
+	kunde *hashtabelle[MAXHASH] = {NULL}; //Hashtabelle
 
-	int counter = 0, islogged = 0; //Kundenzähler, geloggt
+	int counter = 0; //Kundenzähler
+	bool eingeloggt = false; //geloggt
+	long long int tmp_KN = 0; //Temporäre Variablen für Kontonummer
+	int tmp_PIN = 0; // und PIN anlegen
+	int versuche = 0; //PIN-Versuche initialisieren
 
 	//Dynamisches Menu hinzufügen
 	//(Zeiger auf Liste, "Elementname", Level)
@@ -297,24 +301,15 @@ int main() {
 	//1. Menu
 	int auswahl;
 	while (1) { //1.Menuebene
-		menu_show(mymenu, 1); //Menu erzeugen
+		menu_show(mymenu, 1); //1.Menu erzeugen
 		printf("\nIhre Wahl:\n");
 		scanf_s("%d", &auswahl);
 		switch (auswahl) {
-		case 1: { //kunde anlegen
-			kunde *tmp_kunde;
-			for (int i = 0; i < 10; i++){
-				tmp_kunde = kunde_add(h, counter++);
-				kunde_show(tmp_kunde);
-			}
-				
-
+		case 1:  //kunde anlegen
+			for (int i = 0; i < 10; i++)
+				kunde_show(kunde_add(&hashtabelle, counter++));
 			break;
-		}
-		case 2: { //kunde anmelden
-			int versuche = 0; //Zähler für PIN-Versuche initialisieren
-			long long int tmp_KN; int tmp_PIN = 0; //Temporäre Variablen für Kontonummer und PIN anlegen
-			
+		case 2:  //kunde anmelden
 			while (1) {
 				printf("Kontonummer: ");
 				scanf_s("%lld", &tmp_KN); //tmp_Kontonummer mit Benutzereingabe füllen
@@ -323,7 +318,7 @@ int main() {
 				else Status("Bitte geben Sie Ihre 10-stellige Kontonummer an!");
 			}
 			
-			if ((me = kunde_suche(h, tmp_KN)) != NULL) {
+			if ((me = kunde_suche(&hashtabelle, tmp_KN)) != NULL) {
 				//Abfrage, ob blockiert
 				if (me->blockiert == 1) {
 					printf("\n\n----------------------------\n");
@@ -331,7 +326,6 @@ int main() {
 					printf("----------------------------\n");
 					break;
 				}
-
 				while (1) { //zaehler <= 2
 					//abfrage nach PIN
 					while (1) {
@@ -343,7 +337,7 @@ int main() {
 					}
 					if (kunde_pruefen(me, tmp_KN, tmp_PIN) == 1) { //kunden[SIDKunde].PIN) == 1)
 						Status("Sie haben sich erfolgreich angemeldet!");
-						islogged = 1;
+						eingeloggt = true;
 						break;
 					}
 					else {
@@ -351,8 +345,7 @@ int main() {
 						//Prüfen, ob 3x hintereinander die falsche PIN eingegeben wurde!
 						if (versuche == 3) {
 							Status("Sie haben 3x hintereinander\ndie falsche PIN eingegeben!\nSie sind nun blockiert!");
-							me->blockiert = 1; //Kunde wird hiermit blockiert
-							//saveDB(k); //Daten speichern
+							me->blockiert = true; //Kunde wird hiermit blockiert
 							break;
 						}
 					}
@@ -362,7 +355,6 @@ int main() {
 			}
 			else error_kontonummer();
 			break;
-		}
 		case 3: return 0;//Beenden
 		
 		case 55: //Spezial Menu
@@ -371,30 +363,26 @@ int main() {
 				printf("\nIhre Wahl:\n");
 				scanf_s("%d", &auswahl);
 				switch (auswahl) {
-				case 1: { //kunde suchen
-					long long int tmp_KN;
+				case 1:  //kunde suchen
 					printf("Kontonummer:");
 					scanf_s("%lld", &tmp_KN);
 					while (getchar() != '\n');
-					if (kunde_suche(h,tmp_KN) != NULL) {
+					if (kunde_suche(&hashtabelle,tmp_KN) != NULL) {
 						printf("Kunde gefunden!\n");
-						kunde_show(kunde_suche(h,tmp_KN));
+						kunde_show(kunde_suche(&hashtabelle,tmp_KN));
 					}
 					else error_kontonummer();
 					break;	
-				}
-				case 2: { //kunde_output byhash
-					long long int tmp_KN;
+				case 2:  //kunde_output byhash
 					printf("Kontonummer:");
 					scanf_s("%lld", &tmp_KN);
 					while (getchar() != '\n');
-					if (kunde_suche(h,tmp_KN) != NULL)
-						kunde_output_byhash(h,tmp_KN);
+					if (kunde_suche(&hashtabelle,tmp_KN) != NULL)
+						kunde_output_byhash(&hashtabelle,tmp_KN);
 					else error_kontonummer();
 					break;
-				}
 				case 3: //kunde output all
-					kunde_output_all(h);
+					kunde_output_all(&hashtabelle);
 					break;
 				case 4: break; //zurück
 				
@@ -408,7 +396,7 @@ int main() {
 
 
 		while (1) { //2.Menu
-			if (islogged == 0) break; //Wichtig, da sonst nicht zurück
+			if (eingeloggt == false) break; //Wichtig, da sonst nicht zurück
 			menu_show(mymenu, 2); //Menu erzeugen
 			printf("\nIhre Wahl:\n");
 			scanf_s("%d", &auswahl);
@@ -425,11 +413,8 @@ int main() {
 					if (tmp_Einzahlung > 0.00 && tmp_Einzahlung <= 5000.0) break;
 					else printf("falsche Eingabe! Bitte wiederholen\n");
 				}
-				//einz(&h, me, tmp_Einzahlung);
-				//me = kunde_edit(h,me, tmp_Einzahlung, Einzahlung);
-				kunde_einzahlung(h, me, tmp_Einzahlung);
+				kunde_einzahlung(&hashtabelle, me, tmp_Einzahlung);
 				kunde_show(me);
-				//saveDB(k); //Daten speichern
 				break;
 			case 2: { //Auszahlung
 				double tmp_Auszahlung = 0.0;
@@ -444,7 +429,7 @@ int main() {
 				}
 
 				//me = kunde_edit(&h,me, tmp_Auszahlung, Auszahlung);
-				kunde_auszahlung(h, me, tmp_Auszahlung);
+				kunde_auszahlung(&hashtabelle, me, tmp_Auszahlung);
 				kunde_show(me);
 				//saveDB(k); //Daten speichern
 				break;
@@ -453,7 +438,7 @@ int main() {
 				printf("Ueberweisung\n");
 				long long int tmp_zuKontonummer = 0;
 				while (1) {
-					printf("Kontonummer:"); //!!!!!!
+					printf("Kontonummer:");
 					scanf_s("%lld", &tmp_zuKontonummer);
 					while (getchar() != '\n');
 					if (tmp_zuKontonummer >= 1000000000 && tmp_zuKontonummer <= 9999999999 && tmp_zuKontonummer != me->Kontonummer) break; //Eingabe der eigenen Kontonummer kann schöner abgefangen werden
@@ -469,10 +454,7 @@ int main() {
 					else if (tmp_Ueberweisung <= 0) printf("Bitte geben Sie mehr als 0 Euro ein!\n");
 					else printf("falsche Eingabe! Bitte wiederholen\n");
 				}
-
-				//Ueberweisung(k, SID, tmp_Ueberweisung, tmp_zuKontonummer);
-				kunde_ueberweisung(h,me,tmp_Ueberweisung, tmp_zuKontonummer);
-				//saveDB(k); //Daten speichern
+				kunde_ueberweisung(&hashtabelle, me, tmp_Ueberweisung, tmp_zuKontonummer);
 				break;
 			case 4:	 //Kontostand
 				printf("\n\n----------------------------\n");
@@ -526,13 +508,13 @@ int main() {
 				if (res == 'j' || res == 'J') {
 					Status("Ihr Verhaeltnis ist nun beendet!");
 					if (me->Guthaben != 0.0) printf("Es werden Ihnen nun noch %.2lf Euro augezahlt.\n", me->Guthaben);
-					kunde_delete(h, me->Kontonummer);
-					islogged = 0;
+					kunde_delete(&hashtabelle, me->Kontonummer);
+					eingeloggt = false;
 					//break;
 				}
 				break;
 			case 8: //abmelden
-				islogged = 0;
+				eingeloggt = false;
 				break;
 			case 9: return 0;//Beenden
 			default: 
@@ -542,128 +524,5 @@ int main() {
 		}
 	} //1.Menu
 
-	getch();
 	return 0;
 }
-
-//printf("1 - Kunde anlegen\n");
-//printf("2 - Kunde suchen\n");
-//printf("3 - Kunden unsortiert ausgeben\n");
-//printf("4 - Kunde loeschen\n");
-//
-//scanf_s("%d", &auswahl);
-//switch (auswahl) {
-//case 1:
-//	//kunde_add(&k, counter++);
-//	for (int i = 0; i < 20; i++)
-//		kunde_add(k, counter++);
-//
-//	break;
-//case 2:
-//{
-//	long long int tmp_KN;
-//	printf("Kontonummer:");
-//	scanf_s("%lld", &tmp_KN);
-//	while (getchar() != '\n');
-//
-//	if (digits(tmp_KN) == 10) {
-//		int KN[KN_len];
-//		num_to_arr(KN, KN_len, tmp_KN);
-//		if (!check_acc_no(KN)) printf("Falsch\n");
-//
-//		if (kunde_suche(k, tmp_KN) != NULL) {
-//			me = *kunde_suche(k, tmp_KN);
-//			printf("Nummer %lld gefunden!\n", arr_to_num(me.Kontonummer, KN_len));
-//		}
-//		else
-//			printf("Nummer nicht gefunden!\n");
-//		break;
-//	}
-//	else printf("Bitte geben Sie ihre 10-stellige Kontonummer an!\n");
-//
-//}
-//break;
-//case 3: {
-//	long long int tmp_KN;
-//	printf("Kontonummer:");
-//	scanf_s("%lld", &tmp_KN);
-//	while (getchar() != '\n');
-//	if (kunde_suche(k, tmp_KN) != NULL)
-//		kunde_output_byhash(k, tmp_KN);
-//	else printf("Kontonummer nicht gefunden!\n");
-//	break;
-//}
-//case 4: {
-//	long long int tmp_KN;
-//	printf("Kontonummer:");
-//	scanf_s("%lld", &tmp_KN);
-//	if (kunde_suche(k, tmp_KN) != NULL)
-//		kunde_delete(k, tmp_KN);
-//	else printf("Kontonummer nicht gefunden!\n");
-//}
-//}
-
-/// <summary>
-/// String_to_uls the specified string.
-/// </summary>
-/// <param name="string">The string.</param>
-/// <returns></returns>
-//unsigned long int string_to_ul(char string[]) {return atol(string);}
-
-/*int KN[10];
-
-long long int into;
-scanf_s("%lld", &into);
-printf("Eingabe: %lld\n", into);
-
-num_to_arr(KN, 10, into);
-
-for (int i=0;i<10;i++) {
-printf("%d", KN[i]);
-}*/
-
-/*for (int i = 0; i<10; i++)
-printf("%ld\n", GetRand);*/
-
-/*int Arr[10] = { 3, 8, 2, 7, 4, 1, 8, 2, 6, 7 };
-int B[10];
-for (int i = 0; i < 10; i++) {
-B[i] = Arr[i];
-printf("%d", B[i]);
-}*/
-
-/*int Arr[10];
-for (int i = 0; i < 10; i++) {
-get_acc_no(Arr);
-for (int i = 0; i < 10; i++)
-printf("%d", Arr[i]);
-if (check_acc_no(Arr) == 1) printf(" Richtig!");
-printf("\n");
-}*/
-
-/*int KN[KN_len] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 1 };
-int KN1[KN_len] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 1 };
-if (memcmp(KN, KN1, sizeof(KN)) == 0)
-printf("gleich");
-else
-printf("ungleich");*/
-
-//int i;
-//int array1[KN_len] = { 2, 4, 1, 7, 4, 0, 9, 4, 8, 8 };
-//int array2[KN_len] = { 2, 4, 1, 7, 4, 0, 9, 4, 8, 8 };
-
-/////*for (i = 0; i < KN_len; i++) {
-////	array1[i] = i;
-////	array2[i] = i;
-////}*/
-//////array2[5] = 100; /* Verändert array2 an Pos. 5. */
-
-//if (memcmp(array1, array2, sizeof(array1)) == 0)
-//	printf("Beide Arrays haben den gleichen Inhalt\n");
-//else
-//	printf("Die Arrays sind unterschiedlich\n");
-
-/*long long int KNummer;
-printf("Kontonummer:");
-scanf_s("%lld", &KNummer);
-printf("%d", digits(KNummer));*/
