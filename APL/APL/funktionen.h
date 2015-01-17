@@ -58,6 +58,7 @@ int digits(long long int x) {
 /// <param name="Arr">The arr.</param>
 /// <param name="counter">The counter.</param>
 long long int get_kontonummer(int counter) {
+	
 	long long int KN = 2400000000;
 	return KN + counter;
 	
@@ -107,3 +108,14 @@ int GetRandPIN(int KundeID) {
 	int min = 1000, max = 9999;
 	return (rand() % (max - min + 1)) + min;
 }
+
+/// <summary>
+/// Formatierter Ausgabetext
+/// </summary>
+/// <param name="text">String.</param>
+void Status(char *text) {
+	printf("\n-------------------------------\n");
+	printf("%s\n", text);
+	printf("-------------------------------\n\n");
+}
+

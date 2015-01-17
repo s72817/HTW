@@ -23,7 +23,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="funktionen.c">
+    <ClInclude Include="funktionen.h">
+      <Filter>Quelldateien</Filter>
+    </ClInclude>
+    <ClInclude Include="error.h">
       <Filter>Quelldateien</Filter>
     </ClInclude>
   </ItemGroup>

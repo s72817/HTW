@@ -68,7 +68,8 @@
     <ClCompile Include="menu.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="funktionen.c" />
+    <ClInclude Include="error.h" />
+    <ClInclude Include="funktionen.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
