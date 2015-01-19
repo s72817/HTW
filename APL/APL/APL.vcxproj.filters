@@ -29,5 +29,8 @@
     <ClInclude Include="error.h">
       <Filter>Quelldateien</Filter>
     </ClInclude>
+    <ClInclude Include="kunde.h">
+      <Filter>Quelldateien</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

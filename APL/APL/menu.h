@@ -13,7 +13,6 @@ typedef struct _menu{
 	struct _menu *next;
 } menu;
 
-
 /// <summary>
 /// Menuelement hinzufugen
 /// </summary>
@@ -38,7 +37,7 @@ void menu_add(menu **list, char *item, int level){
 			lst_iter = lst_iter->next;
 		lst_iter->next = newEl; // Hänge das Element hinten an
 	}
-	else // wenn die liste leer ist, bin ich das erste Element
+	else // wenn die liste leer ist, ist newEl das erste Element
 		*list = newEl;
 }
 

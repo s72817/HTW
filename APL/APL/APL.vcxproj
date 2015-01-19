@@ -70,6 +70,7 @@
   <ItemGroup>
     <ClInclude Include="error.h" />
     <ClInclude Include="funktionen.h" />
+    <ClInclude Include="kunde.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

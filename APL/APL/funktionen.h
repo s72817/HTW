@@ -1,6 +1,14 @@
 //Funktionen.h by Richard Kerber
 
-#define KN_len 10 //Anz der Ziffernn der Kontonummer
+#define MAXHASH 10
+#define BANKCODE 24
+
+/// <summary>
+/// Boolsche Variable Verfügbar machen
+/// </summary>
+typedef int bool;
+enum { false, true };
+
 
 void num_to_arr(int arr[], int len, long long int num);
 long long int arr_to_num(int *arr, int len);

@@ -1,3 +1,5 @@
+//error.h by Richard Kerber
+
 #include <stdio.h>
 
 
@@ -8,7 +10,7 @@ void error_kontonummer() {
 	Status("Kontonummer nicht gefunden!");
 }
 
-void error_kontonummer_para(long long int kontonummer) {
+void error_kontonummer_parax(long long int kontonummer) {
 	printf("\n\n----------------------------\n");
 	printf("Die Kontonummer: %lld konnte nicht gefunden werden!\n", kontonummer);
 	printf("----------------------------\n\n");
