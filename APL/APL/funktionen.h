@@ -9,7 +9,6 @@
 //-------------------------------------------------------------------
 
 #define MAXHASH 10
-#define BANKCODE 24
 
 /// <summary>
 /// Boolsche Variable Verfügbar machen
