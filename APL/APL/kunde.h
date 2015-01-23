@@ -1,4 +1,12 @@
-//kunde.h by Richard Kerber
+//-------------------------------------------------------------------
+// APL 2.0 by Richard Kerber
+// Bibilotheksnummer: s72817
+// 
+// Projekt: Ein interaktives Banksystem
+// Bei Github: https://github.com/s72817/HTW/tree/master/APL/APL
+//
+// kunden.h
+//-------------------------------------------------------------------
 
 /// <summary>
 /// Kundenstruktur
@@ -29,7 +37,7 @@ int hash_function(long long int Kontonummer) {
 /// <param name="konto">Zeiger auf Konto-Liste</param>
 /// <param name="counter">Zähler als int</param>
 /// <returns>angelegten Kunde</returns>
-kunde *kunde_add(kunde **hashtable, int counter) {
+kunde *kunde_hinzufuegen(kunde **hashtable, int counter) {
 	long long int Kontonummer = get_kontonummer(counter);
 
 	//Hash Wert generienen
@@ -76,6 +84,10 @@ kunde *kunde_suche(kunde **hashtable, long long int Kontonummer) {
 		konto = konto->next;
 	}
 	return NULL;
+}
+
+void kunde_anmelden(kunde **hashtabelle) {
+
 }
 
 /// <summary>
@@ -176,6 +188,17 @@ void kunde_ueberweisung(kunde **hashtable, kunde *me, double Betrag, long long i
 	else {
 		error_kontonummer_parax(zu_Kontonummer);
 	}
+}
+
+/// <summary>
+/// Kunde abmelden - Kunde wird auf NULL gesetzt
+/// </summary>
+/// <param name="me">Me.</param>
+/// <param name="eingeloggt">The eingeloggt.</param>
+/// <returns></returns>
+kunde *kunde_abmelden(kunde *me, bool *eingeloggt) {
+	*eingeloggt = false;
+	return NULL;
 }
 
 /// <summary>

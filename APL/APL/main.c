@@ -1,3 +1,15 @@
+//-------------------------------------------------------------------
+// APL 2.0 by Richard Kerber
+// Bibilotheksnummer: s72817
+// 
+// Projekt: Ein interaktives Banksystem
+// Bei Github: https://github.com/s72817/HTW/tree/master/APL/APL
+//
+// main.c
+//-------------------------------------------------------------------
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -10,28 +22,6 @@
 #include "kunde.h" //abhängig von funktionen.h und error.h - bietet die Kundenklasse an inkl. Hashtabelle
 
 
-//void menu_liste(menu **mymenu) {
-//	
-//	//Dynamisches Menu hinzufügen
-//	//(Zeiger auf Liste, "Elementname", Level)
-//	menu_add(&mymenu, "Kunde anlegen", 1);
-//	menu_add(&mymenu, "Anmelden", 1);
-//	menu_add(&mymenu, "Beenden", 1);
-//	menu_add(&mymenu, "Einzahlung", 2);
-//	menu_add(&mymenu, "Auszahlung", 2);
-//	menu_add(&mymenu, "Ueberweisen", 2);
-//	menu_add(&mymenu, "Kontostand", 2);
-//	menu_add(&mymenu, "4-stellige PIN aendern", 2);
-//	menu_add(&mymenu, "Kundendaten anzeigen", 2);
-//	menu_add(&mymenu, "Konto loeschen", 2);
-//	menu_add(&mymenu, "Abmelden", 2);
-//	menu_add(&mymenu, "Beenden", 2);
-//	menu_add(&mymenu, "Kunde suchen", 3);
-//	menu_add(&mymenu, "Kontonummer mit gleichem Hashwert", 3);
-//	menu_add(&mymenu, "Alle Kunden mit Hash ausgeben", 3);
-//	menu_add(&mymenu, "zurueck", 3);
-//}
-
 /// <summary>
 /// Hauptroutine
 /// </summary>
@@ -40,7 +30,7 @@ int main() {
 	menu *mymenu = NULL; // init. die Liste mit NULL = leere liste
 
 	kunde *me = NULL; //Aktuelles Object
-	kunde *hashtabelle[MAXHASH] = {NULL}; //Hashtabelle
+	kunde *hashtabelle[MAXHASH] = {NULL}; //Hashtabelle + Initialisierung!
 
 	int counter = 0; //Kundenzähler
 	bool eingeloggt = false; //geloggt
@@ -80,20 +70,20 @@ int main() {
 		switch (auswahl) {
 		case 1:  //kunde anlegen
 			for (int i = 0; i < 10; i++)
-				kunde_show(kunde_add(&hashtabelle, counter++));
+				kunde_show(kunde_hinzufuegen(&hashtabelle, counter++));
 			break;
 		case 2:  //kunde anmelden
 			while (1) {
 				printf("Kontonummer: ");
 				scanf_s("%lld", &tmp_KN); //tmp_Kontonummer mit Benutzereingabe füllen
 				while (getchar() != '\n');
-				if (tmp_KN >= 1000000000 && tmp_KN <= 9999999999) break; //Wenn Kontonummer zwischen 1000 und 9999 liegt, dann weiter
+				if (tmp_KN >= 1000000000 && tmp_KN <= 9999999999) break; //Wenn Kontonummer zwischen 1000000000 und 9999999999 liegt, dann weiter
 				else Status("Bitte geben Sie Ihre 10-stellige Kontonummer an!");
 			}
 			
 			if ((me = kunde_suche(&hashtabelle, tmp_KN)) != NULL) {
 				//Abfrage, ob blockiert
-				if (me->blockiert == 1) {
+				if (me->blockiert == true) {
 					printf("\n\n----------------------------\n");
 					printf("Die Kontonummer %lld ist blockiert.\nBitte wenden Sie sich an den naechsten\nfreien Service-Mitarbeiter.\n", me->Kontonummer);
 					printf("----------------------------\n");
@@ -201,10 +191,8 @@ int main() {
 					else printf("falsche Eingabe! Bitte wiederholen\n");
 				}
 
-				//me = kunde_edit(&h,me, tmp_Auszahlung, Auszahlung);
 				kunde_auszahlung(&hashtabelle, me, tmp_Auszahlung);
 				kunde_show(me);
-				//saveDB(k); //Daten speichern
 				break;
 			}
 			case 3: //Überweisung
@@ -287,8 +275,11 @@ int main() {
 				}
 				break;
 			case 8: //abmelden
-				eingeloggt = false;
+				kunde_abmelden(me, &eingeloggt);
+				//eingeloggt = false;
 				break;
+
+				
 			case 9: return 0;//Beenden
 			default: 
 				Status("Ihrer Eingabe konnte kein Menuepunkt zugeordnet werden!\nBitte versuchen Sie es erneut.");

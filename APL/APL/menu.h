@@ -1,3 +1,14 @@
+//-------------------------------------------------------------------
+// APL 2.0 by Richard Kerber
+// Bibilotheksnummer: s72817
+// 
+// Projekt: Ein interaktives Banksystem
+// Bei Github: https://github.com/s72817/HTW/tree/master/APL/APL
+//
+// menu.h
+//-------------------------------------------------------------------
+
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,9 +34,6 @@ void menu_add(menu **list, char *item, int level){
 
 	menu *newEl;
 	menu *lst_iter = *list;
-
-	/*char string[80];
-	strcpy_s(string, sizeof(string), "Hello world from ");*/
 
 	newEl = (menu*)malloc(sizeof(*newEl)); // erzeuge ein neues Element
 	strcpy_s(newEl->item, sizeof(newEl->item), item);

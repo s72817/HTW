@@ -1,4 +1,12 @@
-//Funktionen.h by Richard Kerber
+//-------------------------------------------------------------------
+// APL 2.0 by Richard Kerber
+// Bibilotheksnummer: s72817
+// 
+// Projekt: Ein interaktives Banksystem
+// Bei Github: https://github.com/s72817/HTW/tree/master/APL/APL
+//
+// funktionen.h
+//-------------------------------------------------------------------
 
 #define MAXHASH 10
 #define BANKCODE 24
@@ -42,7 +50,7 @@ void num_to_arr(int arr[], int len, long long int num) {
 //	return k;
 //}
 
-//TODO!
+
 /// <summary>
 /// Zählt Ziffern eines Long Long Integer
 /// </summary>
