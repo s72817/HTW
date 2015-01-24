@@ -10,8 +10,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include <math.h>
 
 //Eigene Dateien !!Reihenfolge beachten!!
 #include "menu.h" // unabhängiges Menu

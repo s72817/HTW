@@ -38,7 +38,6 @@ int hash_function(long long int Kontonummer) {
 void kunde_show(kunde *me) {
 	//Ausgabe
 	printf("\n----------------------------\n");
-	//printf("Sie haben erfolgreich einen neuen Kunden angelegt!\n");
 	printf("KundenID......: %d\n", me->ID);
 	printf("Kontonummer...: %lld", me->Kontonummer);
 	printf("\nGuthaben......: %.2lf Euro\n", me->Guthaben);
@@ -72,17 +71,14 @@ kunde *kunde_hinzufuegen(kunde **hashtable, int counter) {
 	kunde *konto = hashtable[hashaddress];
 
 	/* Speicher für neues Element allozieren */
-	konto = (kunde*)malloc(sizeof(kunde));
-	if (konto == NULL) {
+	if ((konto = (kunde*)malloc(sizeof(kunde))) == NULL) {
 		Status("Kein Speicher für neues Element vorhanden\n");
 		return NULL;
 	}
-	//Struct befüllen
 
+	//Struct befüllen
 	konto->ID = counter;
 	konto->Kontonummer = Kontonummer;
-	/*for (int i = 0; i < KN_len; i++)
-	konto->Kontonummer[i] = KN_Arr[i];*/
 	konto->Guthaben = 0.0;
 	konto->PIN = GetRandPIN(counter);
 	konto->blockiert = 0;
@@ -165,6 +161,7 @@ kunde *kunde_anmelden(kunde **hashtabelle, kunde *me, bool *eingeloggt) {
 		}
 	}
 	else error_kontonummer();
+	return NULL;
 }
 
 /// <summary>
@@ -174,6 +171,7 @@ kunde *kunde_anmelden(kunde **hashtabelle, kunde *me, bool *eingeloggt) {
 /// <param name="eingeloggt">The eingeloggt.</param>
 /// <returns></returns>
 kunde *kunde_abmelden(kunde *me, bool *eingeloggt) {
+	Status("Sie haben sich erfolgreich abgemeldet.");
 	*eingeloggt = false;
 	return NULL;
 }
@@ -183,7 +181,8 @@ kunde *kunde_abmelden(kunde *me, bool *eingeloggt) {
 /// </summary>
 /// <param name="me">Me.</param>
 void kunde_pin_aendern(kunde *me) {
-	int tmp_oldPIN, tmp_newPIN;
+	int tmp_oldPIN, tmp_newPIN = 0;
+
 	Status("4-stellige Pin aendern");
 
 	//Alte PIN einlesen
@@ -232,7 +231,7 @@ void kunde_loeschen(kunde **hashtabelle, kunde *me, bool *eingeloggt) {
 
 	if (res == 'j' || res == 'J') {
 		Status("Ihr Verhaeltnis ist nun beendet!");
-		if (me->Guthaben != 0.0) Status("Es werden Ihnen nun noch %.2lf Euro augezahlt.", me->Guthaben);
+		if (me->Guthaben > 0.0) printf("Es werden Ihnen nun noch %.2lf Euro augezahlt.\n\n", me->Guthaben);
 		*eingeloggt = false;
 
 		//eigentliches Löschen
@@ -265,6 +264,7 @@ void kunde_loeschen(kunde **hashtabelle, kunde *me, bool *eingeloggt) {
 			Status("Es sind keine Daten zum Loeschen vorhanden!");
 	} //END IF
 	else { 
+		Status("Keine Option gewaehlt!");
 		return; //Abbrechen
 	}
 }
@@ -276,7 +276,7 @@ void kunde_loeschen(kunde **hashtabelle, kunde *me, bool *eingeloggt) {
 void kunde_einzahlung(kunde *me) {
 	double Betrag = 0.0;
 
-	printf("Einzahlung");
+	Status("Einzahlung");
 	printf("Bitte geben Sie den Betrag ein, welcher eingezahlt werden soll:\n");
 	while (1) {
 		printf("Betrag:");
@@ -303,7 +303,7 @@ void kunde_auszahlung(kunde *me) {
 	double tmp_Guthaben = me->Guthaben;
 	double Betrag = 0.0;
 
-	
+	Status("Auszahlung");
 	printf("Bitte geben Sie den Betrag ein, welcher ausgezahlt werden soll:\n(Es koennen max. %.2lf Euro ausgezahlt werden)\n", me->Guthaben);
 	while (1) {
 		printf("Betrag:");
@@ -402,8 +402,6 @@ void kunde_output_all(kunde **hashtable) {
 void kunde_output_byhash(kunde **hashtable, long long int KN) {
 	int hashaddress = hash_function(KN);
 	kunde *konto = hashtable[hashaddress];
-
-	//pointer = hashtabelle[hashaddress];
 	while (konto != NULL) {
 		printf("Kontonummer: %lld Hash: %d\n", konto->Kontonummer, hash_function(konto->Kontonummer));
 		konto = konto->next;
